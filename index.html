@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eBF 2026 — Badge Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--yellow:#F5C518;--navy:#1B2F4E;--bg:#ECEAE3;--panel:#fff}
+body{background:var(--bg);font-family:'Nunito',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 80px;gap:24px}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:38px;color:var(--navy);line-height:1;text-align:center}
+.page-title em{font-style:normal}
+.page-sub{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:5px;text-align:center}
+.app{display:grid;grid-template-columns:264px minmax(0,560px) 264px;grid-template-areas:'left canvas right';gap:20px;align-items:start;width:100%;max-width:1160px}
+.sidebar-left{grid-area:left;display:flex;flex-direction:column;gap:12px}
+.sidebar-right{grid-area:right;display:flex;flex-direction:column;gap:12px}
+.canvas-wrap{grid-area:canvas;display:flex;flex-direction:column;align-items:center;gap:10px}
+@media(max-width:1100px){.app{grid-template-columns:1fr 1fr;grid-template-areas:'canvas canvas' 'left right'}.canvas-wrap{max-width:560px;margin:0 auto;width:100%}}
+@media(max-width:640px){.app{grid-template-columns:1fr;grid-template-areas:'canvas' 'left' 'right'}}
+.panel{background:var(--panel);border-radius:16px;padding:18px;box-shadow:0 3px 20px rgba(0,0,0,.06)}
+.panel-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--navy);opacity:.45;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);opacity:.45}
+.field input{padding:9px 11px;border:2px solid #E8E8E4;border-radius:8px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:var(--navy);outline:none;background:#FAFAF8;transition:border-color .15s}
+.field input:focus{border-color:var(--yellow)}
+.field input::placeholder{color:#ccc}
+.upload-zone{border:2px dashed #D0D0C8;border-radius:9px;height:68px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;cursor:pointer;background:#FAFAF8;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
+.upload-zone:hover{border-color:var(--yellow);background:#FFFDE7}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-zone span{font-size:18px;pointer-events:none}
+.upload-zone p{font-size:10px;font-weight:700;color:#bbb;pointer-events:none}
+.thumb{display:none;border-radius:9px;overflow:hidden;height:68px;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.layer-list{display:flex;flex-direction:column;gap:4px}
+.layer-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:all .12s;background:#F8F8F5;user-select:none}
+.layer-item:hover{background:#FFFDE7;border-color:#E0D000}
+.layer-item.active{background:#FFFDE7;border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,197,24,.12)}
+.layer-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.1)}
+.layer-name{flex:1;font-size:12px;font-weight:700;color:var(--navy);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.layer-vis{font-size:10px;color:#ccc;cursor:pointer;padding:2px 4px;border-radius:4px;flex-shrink:0}
+.layer-vis:hover{background:#eee;color:#666}
+.ctrl-block{display:none;flex-direction:column;gap:8px;margin-top:10px;padding-top:10px;border-top:1.5px solid #EBEBEB}
+.ctrl-row{display:flex;align-items:center;gap:8px}
+.ctrl-label{font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--navy);opacity:.45;white-space:nowrap;min-width:48px}
+input[type="range"]{flex:1;accent-color:var(--yellow);cursor:pointer}
+.ctrl-val{font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.btn-navy{background:var(--navy);color:var(--yellow);box-shadow:0 4px 14px rgba(27,47,78,.18)}
+.btn-navy:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(27,47,78,.28)}
+.btn-li{background:#0A66C2;color:#fff;box-shadow:0 4px 14px rgba(10,102,194,.2);display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-li:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(10,102,194,.3)}
+.btn-reset{background:#EEECEA;color:var(--navy);font-size:14px;padding:9px}
+.btn-reset:hover{background:#E5E2DB}
+.li-note{font-size:10px;color:#bbb;font-weight:600;text-align:center;line-height:1.5}
+.theme-row{display:flex;gap:8px}
+.th-btn{flex:1;padding:10px 4px;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all .15s;border:2px solid transparent}
+.th-btn.active{box-shadow:0 0 0 3px rgba(245,197,24,.3)}
+.sw-row{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+.sw-label{font-size:12px;font-weight:700;color:var(--navy);line-height:1.3}
+.sw-wrap{position:relative;flex-shrink:0}
+.sw-wrap input{position:absolute;opacity:0;width:0;height:0}
+.sw-track{display:block;width:36px;height:20px;background:#D0D0C8;border-radius:10px;transition:background .2s;position:relative}
+.sw-track::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw-wrap input:checked + .sw-track{background:var(--yellow)}
+.sw-wrap input:checked + .sw-track::after{transform:translateX(16px)}
+.canvas-container{position:relative;border-radius:14px;box-shadow:0 14px 56px rgba(0,0,0,.16);overflow:hidden;cursor:crosshair;width:100%}
+canvas#badge{display:block;width:100%;aspect-ratio:1/1}
+#sel-box{position:absolute;border:2px dashed rgba(255,255,255,.85);border-radius:3px;pointer-events:none;display:none;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.hint-text{font-size:10.5px;color:#bbb;font-weight:700;letter-spacing:.3px}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="page-title">eBF 2026 — Badge Editor</div>
+  <div class="page-sub">Klikni prvek · přetáhni · měň velikost</div>
+</div>
+
+<div class="app">
+
+  <!-- LEFT -->
+  <div class="sidebar-left">
+    <div class="panel">
+      <div class="panel-title">Tvoje info</div>
+      <div class="field"><label>Celé jméno</label><input type="text" id="inp-name" placeholder="Jana Nováková"></div>
+      <div class="field"><label>Role / pozice</label><input type="text" id="inp-role" placeholder="Procurement Manager"></div>
+      <div class="field">
+        <label>Profilová fotka</label>
+        <div class="upload-zone" id="upload-zone"><input type="file" accept="image/*" id="file-in"><span>📷</span><p>Klikni nebo přetáhni</p></div>
+        <div class="thumb" id="thumb"><img id="thumb-img" src="" alt=""><button id="clear-photo-btn">✕</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Vrstvy</div>
+      <div class="layer-list" id="layer-list"></div>
+      <div class="ctrl-block" id="ctrl-block">
+        <div class="ctrl-row"><span class="ctrl-label">Velikost</span><input type="range" id="sl-size" min="30" max="300" step="1"><span class="ctrl-val" id="val-size">100%</span></div>
+        <div class="ctrl-row"><span class="ctrl-label">Opacita</span><input type="range" id="sl-opacity" min="5" max="100" step="1"><span class="ctrl-val" id="val-opacity">100%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap">
+    <div class="canvas-container" id="canvas-container">
+      <canvas id="badge" width="1000" height="1000"></canvas>
+      <div id="sel-box"></div>
+    </div>
+    <p class="hint-text">Klikni prvek pro výběr · přetáhni myší · slider pro velikost</p>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="sidebar-right">
+    <div class="panel">
+      <div class="panel-title">Styl badge</div>
+      <div class="theme-row">
+        <button class="th-btn active" id="th-yellow" style="background:#F5C518;color:#1B2F4E;border-color:#F5C518;">Žlutý</button>
+        <button class="th-btn" id="th-dark" style="background:#1B2F4E;color:#F5C518;">Tmavý</button>
+        <button class="th-btn" id="th-white" style="background:#fff;color:#1B2F4E;">Bílý</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Možnosti</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+
+        <label class="sw-row">
+          <span class="sw-label">Barevné čáry (stage)</span>
+          <span class="sw-wrap"><input type="checkbox" id="opt-stripes"><span class="sw-track"></span></span>
+        </label>
+
+        <label class="sw-row">
+          <span class="sw-label">Tečky na oddělovači</span>
+          <span class="sw-wrap"><input type="checkbox" id="opt-dots"><span class="sw-track"></span></span>
+        </label>
+
+        <label class="sw-row">
+          <span class="sw-label">Stíny v pozadí</span>
+          <span class="sw-wrap"><input type="checkbox" id="opt-shadow" checked><span class="sw-track"></span></span>
+        </label>
+
+      </div>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:9px;">
+      <div class="panel-title">Export</div>
+      <button class="btn btn-navy" id="btn-download">⬇ Stáhnout PNG</button>
+      <button class="btn btn-li" id="btn-linkedin">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.327-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        Sdílet na LinkedIn
+      </button>
+      <button class="btn btn-reset" id="btn-reset">↺ Výchozí rozvržení</button>
+      <p class="li-note">Badge se stáhne + text se zkopíruje do schránky.</p>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Nápověda</div>
+      <div style="font-size:12px;color:#888;font-weight:600;line-height:1.8">
+        <div><strong style="color:var(--navy)">Klikni</strong> prvek v badgi nebo v seznamu</div>
+        <div><strong style="color:var(--navy)">Přetáhni</strong> kamkoliv po ploše</div>
+        <div><strong style="color:var(--navy)">Velikost</strong> škáluje prvek</div>
+        <div><strong style="color:var(--navy)">Opacita</strong> mění průhlednost</div>
+        <div><strong style="color:var(--navy)">👁 / ✕</strong> skryj nebo smaž vrstvu</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════ */
+const EBF = ['#D9232D','#00A380','#F39200','#0072BB','#7B2D8B'];
+const CS  = 1000;
+const N   = '#1B2F4E';
+const YC  = '#F5C518';
+const WC  = '#ffffff';
+
+const THEMES = {
+  yellow: { bg:YC,   shadow:'#DDA800', barBg:N,        barStripe:true,  ringOut:N,   ringIn:YC,  photoBg:'#C89A00', silhouette:N,   nameCol:N,   textCol:N,   subAlpha:0.48, hashCol:YC,  bottomBg:N        },
+  dark:   { bg:N,    shadow:'#0d1928', barBg:'#0F1E33', barStripe:true,  ringOut:YC,  ringIn:N,   photoBg:'#1a3a60', silhouette:'#4a80b0', nameCol:WC,  textCol:WC,  subAlpha:0.50, hashCol:YC,  bottomBg:'#0F1E33' },
+  white:  { bg:WC,   shadow:'#e0e0e0', barBg:N,        barStripe:true,  ringOut:N,   ringIn:YC,  photoBg:'#e8e8e8', silhouette:N,   nameCol:N,   textCol:N,   subAlpha:0.45, hashCol:YC,  bottomBg:N        },
+};
+let currentTheme = 'yellow';
+const T = () => THEMES[currentTheme];
+
+/* ── Visual options (toggled by switches) ── */
+var opts = {
+  stripes: false,  // stage color stripes in topbar + botbar
+  dots:    false,  // colored dots on divider
+  shadow:  true,   // corner + inner shadows on background
+};
+
+/* ════════════════════════════════════════
+   LAYERS
+════════════════════════════════════════ */
+function defaultLayers() {
+  return [
+    { id:'bg',       label:'Pozadí',             dot:YC,       x:500, y:500, size:100, opacity:100, draggable:false, hidden:false },
+    { id:'topbar',   label:'Horní lišta',         dot:N,        x:500, y:56,  size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'logo',     label:'Logo eBF 2026',       dot:YC,       x:46,  y:56,  size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'logo-tag', label:'Tagline',             dot:YC,       x:960, y:56,  size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'photo',    label:'Profilová fotka',     dot:N,        x:500, y:322, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'name',     label:'Jméno',               dot:N,        x:500, y:584, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'role',     label:'Role / pozice',       dot:'#D9232D',x:500, y:648, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'divider',  label:'Oddělovač',           dot:'#ccc',   x:500, y:696, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'date',     label:'Datum',               dot:N,        x:500, y:756, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'city',     label:'Místo (Ostrava)',      dot:'#888',   x:500, y:808, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'botbar',   label:'Spodní lišta',        dot:N,        x:500, y:932, size:100, opacity:100, draggable:true,  hidden:false },
+    { id:'hashtag',  label:'Hashtag + URL',       dot:YC,       x:500, y:924, size:100, opacity:100, draggable:true,  hidden:false },
+  ];
+}
+
+let layers     = defaultLayers();
+let photoImg   = null;
+let selectedId = null;
+let dragging   = false;
+let dragLayer  = null;
+let dragOffX   = 0;
+let dragOffY   = 0;
+
+const getLayer = id => layers.find(l => l.id === id);
+
+/* ════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════ */
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function fitFont(ctx, text, maxSz, maxW, weight, fam) {
+  let sz = maxSz;
+  ctx.font = weight + ' ' + sz + 'px ' + fam;
+  while (ctx.measureText(text).width > maxW && sz > 14) {
+    sz -= 2;
+    ctx.font = weight + ' ' + sz + 'px ' + fam;
+  }
+  return sz;
+}
+
+function bbox(l) {
+  const s = l.size / 100;
+  switch (l.id) {
+    case 'bg':       return { x:0,          y:0,          w:CS,    h:CS     };
+    case 'topbar':   return { x:0,          y:l.y-56*s,   w:CS,    h:112*s  };
+    case 'logo':     return { x:l.x,        y:l.y-54*s,   w:580*s, h:108*s  };
+    case 'logo-tag': return { x:l.x-380*s,  y:l.y-20*s,   w:380*s, h:38*s   };
+    case 'photo':    return { x:l.x-172*s,  y:l.y-172*s,  w:344*s, h:344*s  };
+    case 'name':     return { x:l.x-450*s,  y:l.y-80*s,   w:900*s, h:96*s   };
+    case 'role':     return { x:l.x-430*s,  y:l.y-30*s,   w:860*s, h:58*s   };
+    case 'divider':  return { x:l.x-400*s,  y:l.y-18*s,   w:800*s, h:36*s   };
+    case 'date':     return { x:l.x-400*s,  y:l.y-44*s,   w:800*s, h:58*s   };
+    case 'city':     return { x:l.x-400*s,  y:l.y-28*s,   w:800*s, h:44*s   };
+    case 'botbar':   return { x:0,          y:l.y-68,      w:CS,    h:136    };
+    case 'hashtag':  return { x:l.x-320*s,  y:l.y-22*s,   w:640*s, h:44*s   };
+    default:         return { x:l.x-80,     y:l.y-24,      w:160,   h:48     };
+  }
+}
+
+function hitTest(cx, cy) {
+  for (let i = layers.length - 1; i >= 0; i--) {
+    const l = layers[i];
+    if (!l.draggable || l.hidden) continue;
+    const b = bbox(l);
+    if (cx >= b.x && cx <= b.x+b.w && cy >= b.y && cy <= b.y+b.h) return l;
+  }
+  return null;
+}
+
+/* ════════════════════════════════════════
+   DRAW
+════════════════════════════════════════ */
+function draw() {
+  const canvas = document.getElementById('badge');
+  const ctx    = canvas.getContext('2d');
+  ctx.clearRect(0, 0, CS, CS);
+  for (const l of layers) {
+    if (l.hidden) continue;
+    ctx.save();
+    ctx.globalAlpha = l.opacity / 100;
+    drawLayer(ctx, l);
+    ctx.restore();
+  }
+  updateSelBox();
+}
+
+function drawLayer(ctx, l) {
+  const s = l.size / 100;
+  const a = l.opacity / 100;
+  const t = T();
+
+  switch (l.id) {
+
+    case 'bg': {
+      ctx.fillStyle = t.bg;
+      ctx.fillRect(0, 0, CS, CS);
+      if (opts.shadow) {
+        // Corner shadow bottom-right
+        ctx.fillStyle = t.shadow; ctx.globalAlpha = a * 0.18;
+        ctx.beginPath(); ctx.moveTo(CS,740); ctx.lineTo(CS,CS); ctx.lineTo(670,CS); ctx.closePath(); ctx.fill();
+        // Lighter secondary shadow top-left
+        ctx.fillStyle = t.shadow; ctx.globalAlpha = a * 0.08;
+        ctx.beginPath(); ctx.moveTo(0,112); ctx.lineTo(200,112); ctx.lineTo(0,280); ctx.closePath(); ctx.fill();
+        // Subtle vignette — edges darkened
+        var grad = ctx.createRadialGradient(CS/2,CS/2,CS*0.28, CS/2,CS/2,CS*0.75);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.07)');
+        ctx.fillStyle = grad; ctx.globalAlpha = a;
+        ctx.fillRect(0, 0, CS, CS);
+      }
+      // Stage color bars bottom-left — always on
+      EBF.forEach(function(c, i) {
+        ctx.fillStyle = c; ctx.globalAlpha = a * 0.22;
+        ctx.fillRect(i * 24, CS - 108, 18, 108);
+      });
+      ctx.globalAlpha = a;
+      break;
+    }
+
+    case 'topbar': {
+      const h   = Math.round(112 * s);
+      const top = Math.round(l.y - h / 2);
+      ctx.fillStyle = t.barBg;
+      ctx.fillRect(0, top, CS, h);
+      if (opts.stripes) {
+        var cw = Math.ceil(CS / EBF.length);
+        EBF.forEach(function(c, i) {
+          ctx.fillStyle = c; ctx.globalAlpha = 0.9;
+          ctx.fillRect(i * cw, top + h - Math.round(7 * s), cw + 1, Math.round(7 * s));
+        });
+      }
+      ctx.globalAlpha = a;
+      break;
+    }
+
+    case 'logo': {
+      const fsz = Math.round(96 * s);
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 ' + fsz + 'px "Barlow Condensed",sans-serif';
+      const eW  = ctx.measureText('e').width;
+      const bfW = ctx.measureText('BF').width;
+      const gap = Math.round(14 * s);
+      ctx.fillStyle = YC; ctx.textAlign = 'left';
+      ctx.fillText('e', l.x, l.y);
+      ctx.fillStyle = WC;
+      ctx.fillText('BF', l.x + eW, l.y);
+      ctx.fillStyle = YC;
+      ctx.fillText('2026', l.x + eW + bfW + gap, l.y);
+      break;
+    }
+
+    case 'logo-tag': {
+      var fsz2 = Math.round(29 * s);
+      ctx.font = '800 ' + fsz2 + 'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle = YC; ctx.globalAlpha = a * 0.75;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText('FESTIVAL DIGITALIZACE NÁKUPU', l.x, l.y);
+      break;
+    }
+
+    case 'photo': {
+      const R  = Math.round(160 * s);
+      const cx = l.x, cy = l.y;
+      ctx.beginPath(); ctx.arc(cx, cy, R + Math.round(12 * s), 0, Math.PI * 2);
+      ctx.fillStyle = t.ringOut; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, R + Math.round(5 * s), 0, Math.PI * 2);
+      ctx.fillStyle = t.ringIn; ctx.fill();
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+      if (photoImg) {
+        const pd  = R * 2;
+        const sc2 = Math.max(pd / photoImg.width, pd / photoImg.height);
+        ctx.drawImage(photoImg, cx - photoImg.width*sc2/2, cy - photoImg.height*sc2/2, photoImg.width*sc2, photoImg.height*sc2);
+      } else {
+        ctx.fillStyle = t.photoBg;
+        ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+        ctx.fillStyle = t.silhouette; ctx.globalAlpha = 0.28;
+        ctx.beginPath(); ctx.arc(cx, cy - R*0.28, R*0.37, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx, cy + R*0.63, R*0.50, R*0.38, 0, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+      break;
+    }
+
+    case 'name': {
+      var nameTxt = document.getElementById('inp-name').value.trim() || 'Tvoje jméno';
+      var nameFsz = fitFont(ctx, nameTxt, Math.round(92 * s), 900 * s, '900', '"Barlow Condensed",sans-serif');
+      ctx.font = '900 ' + nameFsz + 'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle = t.nameCol; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(nameTxt, l.x, l.y);
+      var nW = Math.min(ctx.measureText(nameTxt).width, 600 * s);
+      ctx.globalAlpha = a * 0.12;
+      ctx.fillRect(l.x - nW/2, l.y + 9*s, nW, Math.round(3 * s));
+      ctx.globalAlpha = a;
+      break;
+    }
+
+    case 'role': {
+      var roleTxt = document.getElementById('inp-role').value.trim() || 'Tvoje pozice';
+      var roleFsz = Math.round(36 * s);
+      ctx.font = '700 ' + roleFsz + 'px "Nunito",sans-serif';
+      ctx.fillStyle = t.textCol; ctx.globalAlpha = a * 0.6;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(roleTxt, l.x, l.y, 860 * s);
+      ctx.globalAlpha = a;
+      break;
+    }
+
+    case 'divider': {
+      var dcx = l.x, dcy = l.y;
+      ctx.fillStyle = t.textCol; ctx.globalAlpha = a * 0.1;
+      ctx.fillRect(80, dcy - 1, CS - 160, 2);
+      ctx.globalAlpha = a;
+      if (opts.dots) {
+        [EBF[0], EBF[1], EBF[2]].forEach(function(c, i) {
+          ctx.fillStyle = c; ctx.globalAlpha = a * 0.85;
+          ctx.beginPath(); ctx.arc(dcx + (i - 1) * 20 * s, dcy, 4.5 * s, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = a;
+      }
+      break;
+    }
+
+    case 'date': {
+      ctx.font = '800 ' + Math.round(52 * s) + 'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle = t.nameCol; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('19. – 22. 5. 2026', l.x, l.y);
+      break;
+    }
+
+    case 'city': {
+      ctx.font = '700 ' + Math.round(27 * s) + 'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle = t.textCol; ctx.globalAlpha = a * t.subAlpha;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('DOLNÍ OBLAST VÍTKOVICE  ·  OSTRAVA', l.x, l.y);
+      ctx.globalAlpha = a;
+      break;
+    }
+
+    case 'botbar': {
+      var bh    = 136;
+      var btopY = l.y - bh / 2;
+      ctx.fillStyle = t.bottomBg; ctx.fillRect(0, btopY, CS, bh);
+      ctx.fillStyle = YC; ctx.fillRect(0, btopY, CS, 5);
+      if (opts.stripes) {
+        var bcw = Math.ceil(CS / EBF.length);
+        EBF.forEach(function(c, i) {
+          ctx.fillStyle = c; ctx.globalAlpha = 0.9;
+          ctx.fillRect(i * bcw, btopY + bh - 14, bcw + 1, 14);
+        });
+      }
+      ctx.globalAlpha = a;
+      break;
+    }
+
+    case 'hashtag': {
+      ctx.font = '700 ' + Math.round(30 * s) + 'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle = t.hashCol; ctx.globalAlpha = a * 0.82;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('#eBF2026  ·  ebizforum.com', l.x, l.y);
+      break;
+    }
+  }
+}
+
+/* ════════════════════════════════════════
+   SELECTION BOX
+════════════════════════════════════════ */
+function updateSelBox() {
+  const sel = document.getElementById('sel-box');
+  if (!selectedId) { sel.style.display = 'none'; return; }
+  const l = getLayer(selectedId);
+  if (!l || l.hidden) { sel.style.display = 'none'; return; }
+  const b  = bbox(l);
+  const sc = document.getElementById('badge').getBoundingClientRect().width / CS;
+  const cr = document.getElementById('badge').getBoundingClientRect();
+  const co = document.getElementById('canvas-container').getBoundingClientRect();
+  sel.style.display = 'block';
+  sel.style.left    = (cr.left - co.left + b.x * sc) + 'px';
+  sel.style.top     = (cr.top  - co.top  + b.y * sc) + 'px';
+  sel.style.width   = (b.w * sc) + 'px';
+  sel.style.height  = (b.h * sc) + 'px';
+}
+
+/* ════════════════════════════════════════
+   LAYER UI
+════════════════════════════════════════ */
+function buildLayerList() {
+  const list = document.getElementById('layer-list');
+  list.innerHTML = '';
+  const rev = [...layers].reverse();
+  rev.forEach(function(l) {
+    const el = document.createElement('div');
+    el.className = 'layer-item' + (l.id === selectedId ? ' active' : '');
+    el.innerHTML =
+      '<div class="layer-dot" style="background:' + l.dot + ';opacity:' + (l.hidden ? 0.3 : 1) + '"></div>' +
+      '<span class="layer-name" style="opacity:' + (l.hidden ? 0.4 : 1) + '">' + l.label + '</span>' +
+      '<span class="layer-vis" data-action="hide" data-id="' + l.id + '">' + (l.hidden ? '👁‍🗨' : '👁') + '</span>' +
+      '<span class="layer-vis" data-action="del"  data-id="' + l.id + '" style="color:#c0392b">✕</span>';
+    el.addEventListener('click', function() { selectLayer(l.id); });
+    list.appendChild(el);
+  });
+}
+
+document.getElementById('layer-list').addEventListener('click', function(e) {
+  const span = e.target.closest('[data-action]');
+  if (!span) return;
+  e.stopPropagation();
+  const id  = span.dataset.id;
+  const act = span.dataset.action;
+  if (act === 'hide') {
+    const l = getLayer(id); if (l) l.hidden = !l.hidden;
+    buildLayerList(); draw();
+  } else if (act === 'del') {
+    layers = layers.filter(function(l) { return l.id !== id; });
+    if (selectedId === id) {
+      selectedId = null;
+      document.getElementById('ctrl-block').style.display = 'none';
+      document.getElementById('sel-box').style.display = 'none';
+    }
+    buildLayerList(); draw();
+  }
+});
+
+function selectLayer(id) {
+  selectedId = id;
+  const l = getLayer(id);
+  if (!l) return;
+  buildLayerList();
+  document.getElementById('ctrl-block').style.display = 'flex';
+  document.getElementById('sl-size').value    = l.size;
+  document.getElementById('val-size').textContent   = l.size + '%';
+  document.getElementById('sl-opacity').value = l.opacity;
+  document.getElementById('val-opacity').textContent = l.opacity + '%';
+  draw();
+}
+
+document.getElementById('sl-size').addEventListener('input', function() {
+  if (!selectedId) return;
+  const v = +this.value;
+  getLayer(selectedId).size = v;
+  document.getElementById('val-size').textContent = v + '%';
+  draw();
+});
+document.getElementById('sl-opacity').addEventListener('input', function() {
+  if (!selectedId) return;
+  const v = +this.value;
+  getLayer(selectedId).opacity = v;
+  document.getElementById('val-opacity').textContent = v + '%';
+  draw();
+});
+
+/* ════════════════════════════════════════
+   THEME
+════════════════════════════════════════ */
+function switchTheme(name) {
+  currentTheme = name;
+  ['yellow', 'dark', 'white'].forEach(function(k) {
+    const btn = document.getElementById('th-' + k);
+    if (!btn) return;
+    if (k === name) {
+      btn.classList.add('active');
+      btn.style.borderColor = YC;
+    } else {
+      btn.classList.remove('active');
+      btn.style.borderColor = 'transparent';
+    }
+  });
+  draw();
+}
+
+document.getElementById('th-yellow').addEventListener('click', function() { switchTheme('yellow'); });
+document.getElementById('th-dark').addEventListener('click',   function() { switchTheme('dark');   });
+document.getElementById('th-white').addEventListener('click',  function() { switchTheme('white');  });
+
+/* ── Options switches ── */
+var optIds = ['stripes', 'dots', 'shadow'];
+optIds.forEach(function(key) {
+  document.getElementById('opt-' + key).addEventListener('change', function() {
+    opts[key] = this.checked;
+    draw();
+  });
+});
+
+/* ════════════════════════════════════════
+   DRAG
+════════════════════════════════════════ */
+function canvasPos(cx, cy) {
+  const r  = document.getElementById('badge').getBoundingClientRect();
+  const sc = r.width / CS;
+  return { x: (cx - r.left) / sc, y: (cy - r.top) / sc };
+}
+
+function startDrag(cx, cy) {
+  const pos = canvasPos(cx, cy);
+  const hit = hitTest(pos.x, pos.y);
+  if (!hit) return false;
+  selectedId = hit.id; dragging = true; dragLayer = hit;
+  dragOffX = pos.x - hit.x; dragOffY = pos.y - hit.y;
+  selectLayer(hit.id);
+  return true;
+}
+
+function moveDrag(cx, cy) {
+  if (!dragging || !dragLayer) return;
+  const pos  = canvasPos(cx, cy);
+  dragLayer.x = Math.round(Math.max(0, Math.min(CS, pos.x - dragOffX)));
+  dragLayer.y = Math.round(Math.max(0, Math.min(CS, pos.y - dragOffY)));
+  draw();
+}
+
+function endDrag() { dragging = false; dragLayer = null; }
+
+var cc = document.getElementById('canvas-container');
+cc.addEventListener('mousedown', function(e) { if (startDrag(e.clientX, e.clientY)) e.preventDefault(); });
+window.addEventListener('mousemove', function(e) { moveDrag(e.clientX, e.clientY); });
+window.addEventListener('mouseup',   endDrag);
+cc.addEventListener('touchstart', function(e) {
+  var t = e.touches[0];
+  if (startDrag(t.clientX, t.clientY)) e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', function(e) {
+  if (!dragging) return;
+  moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchend', endDrag);
+
+/* ════════════════════════════════════════
+   PHOTO
+════════════════════════════════════════ */
+document.getElementById('inp-name').addEventListener('input', draw);
+document.getElementById('inp-role').addEventListener('input', draw);
+
+document.getElementById('file-in').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var r = new FileReader();
+  r.onload = function(ev) {
+    var img = new Image();
+    img.onload = function() { photoImg = img; draw(); };
+    img.src = ev.target.result;
+    document.getElementById('thumb-img').src = ev.target.result;
+    document.getElementById('upload-zone').style.display = 'none';
+    document.getElementById('thumb').style.display = 'block';
+  };
+  r.readAsDataURL(file);
+});
+
+document.getElementById('clear-photo-btn').addEventListener('click', function() {
+  photoImg = null;
+  document.getElementById('file-in').value = '';
+  document.getElementById('upload-zone').style.display = 'flex';
+  document.getElementById('thumb').style.display = 'none';
+  draw();
+});
+
+/* ════════════════════════════════════════
+   EXPORT
+════════════════════════════════════════ */
+document.getElementById('btn-reset').addEventListener('click', function() {
+  layers = defaultLayers(); selectedId = null;
+  document.getElementById('ctrl-block').style.display = 'none';
+  document.getElementById('sel-box').style.display = 'none';
+  buildLayerList(); draw();
+});
+
+document.getElementById('btn-download').addEventListener('click', function() {
+  draw();
+  var a = document.createElement('a');
+  a.download = 'eBF2026-LinkedIn-Badge.png';
+  a.href = document.getElementById('badge').toDataURL('image/png');
+  a.click();
+});
+
+document.getElementById('btn-linkedin').addEventListener('click', function() {
+  var name = document.getElementById('inp-name').value.trim() || '';
+  var role = document.getElementById('inp-role').value.trim() || '';
+  var txt = [
+    'Uvidíme se na eBF 2026!', '',
+    (name ? (name + (role ? ' – ' + role : '') + ' – budu') : 'Budu') + ' na největším středoevropském festivalu o digitalizaci nákupu a veřejných zakázek.',
+    '', '19. – 22. 5. 2026', 'Dolní oblast Vítkovice, Ostrava', '',
+    'eBF je unikátní setkání procurement profesionálů – sdílení znalostí, navazování kontaktů a inspirace pro nákupní strategie.',
+    '', 'ebizforum.com', '',
+    '#eBF2026 #Procurement #Digitalizace #VerejneZakazky #Ostrava'
+  ].join('\n');
+
+  navigator.clipboard.writeText(txt).catch(function(){});
+  draw();
+  var a = document.createElement('a');
+  a.download = 'eBF2026-LinkedIn-Badge.png';
+  a.href = document.getElementById('badge').toDataURL('image/png');
+  a.click();
+  setTimeout(function() { showModal(txt); }, 500);
+});
+
+function showModal(text) {
+  var old = document.getElementById('li-modal');
+  if (old) old.remove();
+  var ov = document.createElement('div');
+  ov.id = 'li-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px';
+  ov.innerHTML =
+    '<div style="background:#fff;border-radius:20px;padding:28px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Nunito,sans-serif;display:flex;flex-direction:column;gap:14px">'
+    + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:900;color:#1B2F4E;text-transform:uppercase;letter-spacing:1px">Badge stažen!</div>'
+    + '<p style="font-size:13px;color:#888;font-weight:700">Text príspevku byl zkopírován do schránky.</p>'
+    + '<div style="background:#F5F5F0;border-radius:10px;padding:14px;font-size:12.5px;color:#333;line-height:1.65;white-space:pre-line;max-height:170px;overflow-y:auto;border:1px solid #E5E5E0">' + text + '</div>'
+    + '<p style="font-size:11.5px;color:#aaa;font-weight:600;line-height:1.5">Na LinkedIn klikni <strong>Vytvorit príspevek</strong>, prilož badge a vlož text ze schránky (Ctrl+V).</p>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button id="li-open-btn" style="flex:1;padding:12px;background:#0A66C2;color:#fff;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Otevrit LinkedIn</button>'
+    + '<button id="li-close-btn" style="padding:12px 16px;background:#F0EDE6;color:#1B2F4E;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;cursor:pointer">Zavrit</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  document.getElementById('li-open-btn').addEventListener('click', function() {
+    ov.remove();
+    window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank', 'width=750,height=700');
+  });
+  document.getElementById('li-close-btn').addEventListener('click', function() { ov.remove(); });
+  ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+}
+
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+document.fonts.ready.then(function() { buildLayerList(); draw(); });
+setTimeout(function() { buildLayerList(); draw(); }, 800);
+</script>
+</body>
+</html>
