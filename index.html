@@ -6,7 +6,7 @@
 <title>eBF 2026 — Badge Editor</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--yellow:#F5C518;--navy:#1B2F4E;--bg:#ECEAE3;--panel:#fff}
 body{background:var(--bg);font-family:'Nunito',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 80px;gap:24px}
 .page-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:38px;color:var(--navy);line-height:1;text-align:center}
@@ -52,8 +52,8 @@ input[type="range"]{flex:1;accent-color:var(--yellow);cursor:pointer}
 .btn-navy:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(27,47,78,.28)}
 .btn-li{background:#0A66C2;color:#fff;box-shadow:0 4px 14px rgba(10,102,194,.2);display:flex;align-items:center;justify-content:center;gap:7px}
 .btn-li:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(10,102,194,.3)}
-.btn-reset{background:#EEECEA;color:var(--navy);font-size:14px;padding:9px}
-.btn-reset:hover{background:#E5E2DB}
+.btn-reset{background:transparent;color:var(--navy);font-size:13px;padding:9px 18px;border:2px solid rgba(27,47,78,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.5px;opacity:.75}
+.btn-reset:hover{background:rgba(27,47,78,.06);border-color:rgba(27,47,78,.35);opacity:1;transform:none;box-shadow:none}
 .li-note{font-size:10px;color:#bbb;font-weight:600;text-align:center;line-height:1.5}
 .theme-row{display:flex;gap:8px}
 .th-btn{flex:1;padding:10px 4px;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all .15s;border:2px solid transparent}
@@ -92,6 +92,19 @@ canvas#badge{display:block;width:100%;aspect-ratio:1/1}
         <div class="upload-zone" id="upload-zone"><input type="file" accept="image/*" id="file-in"><span>📷</span><p>Klikni nebo přetáhni</p></div>
         <div class="thumb" id="thumb"><img id="thumb-img" src="" alt=""><button id="clear-photo-btn">✕</button></div>
       </div>
+      <div id="photo-pos-panel" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid #EBEBEB;">
+        <div class="panel-title" style="margin-bottom:8px;">Pozice fotky v kruhu</div>
+        <div class="ctrl-row" style="margin-bottom:6px;">
+          <span class="ctrl-label">Vlevo/Vpravo</span>
+          <input type="range" id="sl-photo-x" min="-100" max="100" step="1" value="0" style="flex:1;accent-color:var(--yellow);cursor:pointer">
+          <span class="ctrl-val" id="val-photo-x" style="font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right">0</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">Nahoru/Dolů</span>
+          <input type="range" id="sl-photo-y" min="-100" max="100" step="1" value="0" style="flex:1;accent-color:var(--yellow);cursor:pointer">
+          <span class="ctrl-val" id="val-photo-y" style="font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right">0</span>
+        </div>
+      </div>
     </div>
     <div class="panel">
       <div class="panel-title">Vrstvy</div>
@@ -110,7 +123,10 @@ canvas#badge{display:block;width:100%;aspect-ratio:1/1}
       <div id="sel-box"></div>
     </div>
     <p class="hint-text">Klikni prvek pro výběr · přetáhni myší · slider pro velikost</p>
-    <button class="btn btn-reset" id="btn-reset" style="max-width:260px;align-self:center;">↺ Výchozí rozvržení</button>
+    <button class="btn btn-reset" id="btn-reset" style="max-width:260px;align-self:center;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Výchozí rozvržení
+    </button>
   </div>
 
   <!-- RIGHT -->
@@ -215,6 +231,8 @@ function defaultLayers() {
 
 let layers     = defaultLayers();
 let photoImg   = null;
+let photoOffsetX = 0;
+let photoOffsetY = 0;
 let selectedId = null;
 let dragging   = false;
 let dragLayer  = null;
@@ -377,7 +395,9 @@ function drawLayer(ctx, l) {
       if (photoImg) {
         const pd  = R * 2;
         const sc2 = Math.max(pd / photoImg.width, pd / photoImg.height);
-        ctx.drawImage(photoImg, cx - photoImg.width*sc2/2, cy - photoImg.height*sc2/2, photoImg.width*sc2, photoImg.height*sc2);
+        const ox  = photoOffsetX * R;
+        const oy  = photoOffsetY * R;
+        ctx.drawImage(photoImg, cx - photoImg.width*sc2/2 + ox, cy - photoImg.height*sc2/2 + oy, photoImg.width*sc2, photoImg.height*sc2);
       } else {
         ctx.fillStyle = t.photoBg;
         ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
@@ -650,15 +670,31 @@ document.getElementById('file-in').addEventListener('change', function(e) {
     document.getElementById('thumb-img').src = ev.target.result;
     document.getElementById('upload-zone').style.display = 'none';
     document.getElementById('thumb').style.display = 'block';
+    document.getElementById('photo-pos-panel').style.display = 'block';
   };
   r.readAsDataURL(file);
 });
 
 document.getElementById('clear-photo-btn').addEventListener('click', function() {
   photoImg = null;
+  photoOffsetX = 0; photoOffsetY = 0;
+  document.getElementById('sl-photo-x').value = 0; document.getElementById('val-photo-x').textContent = '0';
+  document.getElementById('sl-photo-y').value = 0; document.getElementById('val-photo-y').textContent = '0';
   document.getElementById('file-in').value = '';
   document.getElementById('upload-zone').style.display = 'flex';
   document.getElementById('thumb').style.display = 'none';
+  document.getElementById('photo-pos-panel').style.display = 'none';
+  draw();
+});
+
+document.getElementById('sl-photo-x').addEventListener('input', function() {
+  photoOffsetX = +this.value / 100;
+  document.getElementById('val-photo-x').textContent = this.value;
+  draw();
+});
+document.getElementById('sl-photo-y').addEventListener('input', function() {
+  photoOffsetY = +this.value / 100;
+  document.getElementById('val-photo-y').textContent = this.value;
   draw();
 });
 
@@ -710,12 +746,12 @@ function showModal(text) {
   ov.innerHTML =
     '<div style="background:#fff;border-radius:20px;padding:28px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Nunito,sans-serif;display:flex;flex-direction:column;gap:14px">'
     + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:900;color:#1B2F4E;text-transform:uppercase;letter-spacing:1px">Badge stažen!</div>'
-    + '<p style="font-size:13px;color:#888;font-weight:700">Text príspevku byl zkopírován do schránky.</p>'
+    + '<p style="font-size:13px;color:#888;font-weight:700">Text příspěvku byl zkopírován do schránky.</p>'
     + '<div style="background:#F5F5F0;border-radius:10px;padding:14px;font-size:12.5px;color:#333;line-height:1.65;white-space:pre-line;max-height:170px;overflow-y:auto;border:1px solid #E5E5E0">' + text + '</div>'
-    + '<p style="font-size:11.5px;color:#aaa;font-weight:600;line-height:1.5">Na LinkedIn klikni <strong>Vytvorit príspevek</strong>, prilož badge a vlož text ze schránky (Ctrl+V).</p>'
+    + '<p style="font-size:11.5px;color:#aaa;font-weight:600;line-height:1.5">Na LinkedIn klikni <strong>Vytvořit příspěvek</strong>, přilož badge a vlož text ze schránky (Ctrl+V).</p>'
     + '<div style="display:flex;gap:10px">'
-    + '<button id="li-open-btn" style="flex:1;padding:12px;background:#0A66C2;color:#fff;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Otevrit LinkedIn</button>'
-    + '<button id="li-close-btn" style="padding:12px 16px;background:#F0EDE6;color:#1B2F4E;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;cursor:pointer">Zavrit</button>'
+    + '<button id="li-open-btn" style="flex:1;padding:12px;background:#0A66C2;color:#fff;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Otevřít LinkedIn</button>'
+    + '<button id="li-close-btn" style="padding:12px 16px;background:#F0EDE6;color:#1B2F4E;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;cursor:pointer">Zavřít</button>'
     + '</div></div>';
   document.body.appendChild(ov);
   document.getElementById('li-open-btn').addEventListener('click', function() {
