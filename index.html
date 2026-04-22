@@ -151,7 +151,7 @@ body{
 }
 .ctrl-block.visible{animation:ctrlReveal .3s cubic-bezier(.22,1,.36,1) both}
 .ctrl-row{display:flex;align-items:center;gap:8px}
-.ctrl-label{font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--navy);opacity:.45;white-space:nowrap;min-width:48px}
+.ctrl-label{font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--navy);opacity:.45;white-space:nowrap;min-width:72px}
 input[type="range"]{flex:1;accent-color:var(--yellow);cursor:pointer;transition:transform .15s}
 input[type="range"]:hover{transform:scaleY(1.3)}
 .ctrl-val{font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right;transition:color .15s}
@@ -247,10 +247,7 @@ input[type="range"]:hover{transform:scaleY(1.3)}
   overflow:hidden;cursor:crosshair;width:100%;
   transition:box-shadow .4s ease, transform .3s cubic-bezier(.22,1,.36,1);
 }
-.canvas-container:hover{
-  box-shadow:0 20px 70px rgba(0,0,0,.22), 0 0 0 2px rgba(245,197,24,.15);
-  transform:translateY(-2px);
-}
+
 .canvas-container.drag-active{
   cursor:grabbing;
   box-shadow:0 24px 80px rgba(0,0,0,.28), 0 0 0 3px rgba(245,197,24,.3);
@@ -310,14 +307,16 @@ canvas#badge{display:block;width:100%;aspect-ratio:1/1}
       <div id="photo-pos-panel" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid #EBEBEB;">
         <div class="panel-title" style="margin-bottom:8px;">Pozice fotky v kruhu</div>
         <div class="ctrl-row" style="margin-bottom:6px;">
-          <span class="ctrl-label">Vlevo/Vpravo</span>
+          <span class="ctrl-label" style="letter-spacing:0;font-size:9px;min-width:64px">Vlevo/Vpravo</span>
           <input type="range" id="sl-photo-x" min="-100" max="100" step="1" value="0" style="flex:1;accent-color:var(--yellow);cursor:pointer">
-          <span class="ctrl-val" id="val-photo-x" style="font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right">0</span>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">Nahoru/Dolu</span>
+          <span class="ctrl-label" style="letter-spacing:0;font-size:9px;min-width:64px">Nahoru/Dolu</span>
           <input type="range" id="sl-photo-y" min="-100" max="100" step="1" value="0" style="flex:1;accent-color:var(--yellow);cursor:pointer">
-          <span class="ctrl-val" id="val-photo-y" style="font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right">0</span>
+        </div>
+        <div class="ctrl-row" style="margin-top:6px;">
+          <span class="ctrl-label" style="letter-spacing:0;font-size:9px;min-width:64px">Přiblížení</span>
+          <input type="range" id="sl-photo-z" min="50" max="250" step="1" value="100" style="flex:1;accent-color:var(--yellow);cursor:pointer">
         </div>
       </div>
     </div>
@@ -448,6 +447,7 @@ let layers     = defaultLayers();
 let photoImg   = null;
 let photoOffsetX = 0;
 let photoOffsetY = 0;
+let photoScale   = 1;
 let selectedId = null;
 let dragging   = false;
 let dragLayer  = null;
@@ -609,7 +609,7 @@ function drawLayer(ctx, l) {
       ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
       if (photoImg) {
         const pd  = R * 2;
-        const sc2 = Math.max(pd / photoImg.width, pd / photoImg.height);
+        const sc2 = Math.max(pd / photoImg.width, pd / photoImg.height) * photoScale;
         const ox  = photoOffsetX * R;
         const oy  = photoOffsetY * R;
         ctx.drawImage(photoImg, cx - photoImg.width*sc2/2 + ox, cy - photoImg.height*sc2/2 + oy, photoImg.width*sc2, photoImg.height*sc2);
@@ -727,7 +727,7 @@ function updateSelBox() {
 /* ════════════════════════════════════════
    LAYER UI
 ════════════════════════════════════════ */
-function buildLayerList() {
+function buildLayerList(skipAnim) {
   const list = document.getElementById('layer-list');
   list.innerHTML = '';
   const rev = [...layers].reverse();
@@ -739,9 +739,10 @@ function buildLayerList() {
       '<span class="layer-name" style="opacity:' + (l.hidden ? 0.4 : 1) + '">' + l.label + '</span>' +
       '<span class="layer-vis" data-action="hide" data-id="' + l.id + '">' + (l.hidden ? '👁‍🗨' : '👁') + '</span>' +
       '<span class="layer-vis" data-action="del"  data-id="' + l.id + '" style="color:#c0392b">✕</span>';
-    el.style.animationDelay = (rev.indexOf(l) * 35) + 'ms';
-    el.style.animation = 'layerSlideIn .28s cubic-bezier(.22,1,.36,1) both';
-    el.style.animationDelay = (rev.indexOf(l) * 30) + 'ms';
+    if (!skipAnim) {
+      el.style.animation = 'layerSlideIn .28s cubic-bezier(.22,1,.36,1) both';
+      el.style.animationDelay = (rev.indexOf(l) * 30) + 'ms';
+    }
     el.addEventListener('click', function() { selectLayer(l.id); });
     list.appendChild(el);
   });
@@ -771,7 +772,7 @@ function selectLayer(id) {
   selectedId = id;
   const l = getLayer(id);
   if (!l) return;
-  buildLayerList();
+  buildLayerList(true);
   var cb = document.getElementById('ctrl-block');
   cb.style.display = 'flex';
   cb.classList.add('visible');
@@ -861,7 +862,7 @@ function endDrag() { dragging = false; dragLayer = null; }
 var cc = document.getElementById('canvas-container');
 cc.addEventListener('mousedown', function(e) { if (startDrag(e.clientX, e.clientY)) e.preventDefault(); });
 window.addEventListener('mousemove', function(e) { moveDrag(e.clientX, e.clientY); });
-window.addEventListener('mouseup',   endDrag);
+window.addEventListener('mouseup', function() { endDrag(); });
 cc.addEventListener('touchstart', function(e) {
   var t = e.touches[0];
   if (startDrag(t.clientX, t.clientY)) e.preventDefault();
@@ -871,7 +872,7 @@ window.addEventListener('touchmove', function(e) {
   moveDrag(e.touches[0].clientX, e.touches[0].clientY);
   e.preventDefault();
 }, { passive: false });
-window.addEventListener('touchend', endDrag);
+window.addEventListener('touchend', function() { endDrag(); });
 
 /* ════════════════════════════════════════
    PHOTO
@@ -897,9 +898,10 @@ document.getElementById('file-in').addEventListener('change', function(e) {
 
 document.getElementById('clear-photo-btn').addEventListener('click', function() {
   photoImg = null;
-  photoOffsetX = 0; photoOffsetY = 0;
-  document.getElementById('sl-photo-x').value = 0; document.getElementById('val-photo-x').textContent = '0';
-  document.getElementById('sl-photo-y').value = 0; document.getElementById('val-photo-y').textContent = '0';
+  photoOffsetX = 0; photoOffsetY = 0; photoScale = 1;
+  document.getElementById('sl-photo-x').value = 0;
+  document.getElementById('sl-photo-y').value = 0;
+  document.getElementById('sl-photo-z').value = 100;
   document.getElementById('file-in').value = '';
   document.getElementById('upload-zone').style.display = 'flex';
   document.getElementById('thumb').style.display = 'none';
@@ -909,12 +911,14 @@ document.getElementById('clear-photo-btn').addEventListener('click', function() 
 
 document.getElementById('sl-photo-x').addEventListener('input', function() {
   photoOffsetX = +this.value / 100;
-  document.getElementById('val-photo-x').textContent = this.value;
   draw();
 });
 document.getElementById('sl-photo-y').addEventListener('input', function() {
   photoOffsetY = +this.value / 100;
-  document.getElementById('val-photo-y').textContent = this.value;
+  draw();
+});
+document.getElementById('sl-photo-z').addEventListener('input', function() {
+  photoScale = +this.value / 100;
   draw();
 });
 
@@ -966,12 +970,12 @@ function showModal(text) {
   ov.innerHTML =
     '<div style="background:#fff;border-radius:20px;padding:28px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Nunito,sans-serif;display:flex;flex-direction:column;gap:14px;animation:modalIn .35s cubic-bezier(.22,1,.36,1) both">'
     + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:900;color:#1B2F4E;text-transform:uppercase;letter-spacing:1px">Badge stažen!</div>'
-    + '<p style="font-size:13px;color:#888;font-weight:700">Text príspevku byl zkopírován do schránky.</p>'
+    + '<p style="font-size:13px;color:#888;font-weight:700">Text příspěvku byl zkopírován do schránky.</p>'
     + '<div style="background:#F5F5F0;border-radius:10px;padding:14px;font-size:12.5px;color:#333;line-height:1.65;white-space:pre-line;max-height:170px;overflow-y:auto;border:1px solid #E5E5E0">' + text + '</div>'
-    + '<p style="font-size:11.5px;color:#aaa;font-weight:600;line-height:1.5">Na LinkedIn klikni <strong>Vytvorit príspevek</strong>, prilož badge a vlož text ze schránky (Ctrl+V).</p>'
+    + '<p style="font-size:11.5px;color:#aaa;font-weight:600;line-height:1.5">Na LinkedIn klikni <strong>Vytvořit příspěvek</strong>, přilož badge a vlož text ze schránky (Ctrl+V).</p>'
     + '<div style="display:flex;gap:10px">'
-    + '<button id="li-open-btn" style="flex:1;padding:12px;background:#0A66C2;color:#fff;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Otevrit LinkedIn</button>'
-    + '<button id="li-close-btn" style="padding:12px 16px;background:#F0EDE6;color:#1B2F4E;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;cursor:pointer">Zavrit</button>'
+    + '<button id="li-open-btn" style="flex:1;padding:12px;background:#0A66C2;color:#fff;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Otevřít LinkedIn</button>'
+    + '<button id="li-close-btn" style="padding:12px 16px;background:#F0EDE6;color:#1B2F4E;border:none;border-radius:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:17px;font-weight:900;cursor:pointer">Zavřít</button>'
     + '</div></div>';
   document.body.appendChild(ov);
   document.getElementById('li-open-btn').addEventListener('click', function() {
@@ -1009,18 +1013,7 @@ window.addEventListener('mouseup', function() { cc2.classList.remove('drag-activ
 cc2.addEventListener('touchstart', function() { cc2.classList.add('drag-active'); }, { passive: true });
 window.addEventListener('touchend', function() { cc2.classList.remove('drag-active'); });
 
-/* ── Badge pop on draw ── */
-var badgePopTimeout;
-var origDraw = draw;
-draw = function() {
-  origDraw();
-  var c = document.getElementById('badge');
-  c.style.animation = 'none';
-  c.offsetHeight;
-  c.style.animation = 'badgePop .35s cubic-bezier(.22,1,.36,1)';
-  clearTimeout(badgePopTimeout);
-  badgePopTimeout = setTimeout(function() { c.style.animation = ''; }, 400);
-};
+/* suppress pop for all range inputs - kept for future use */
 </script>
 </body>
 </html>
