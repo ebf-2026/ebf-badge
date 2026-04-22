@@ -95,14 +95,12 @@ canvas#badge{display:block;width:100%;aspect-ratio:1/1}
       <div id="photo-pos-panel" style="display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid #EBEBEB;">
         <div class="panel-title" style="margin-bottom:8px;">Pozice fotky v kruhu</div>
         <div class="ctrl-row" style="margin-bottom:6px;">
-          <span class="ctrl-label">Vlevo/Vpravo</span>
+          <span class="ctrl-label" style="min-width:90px;">Vlevo/Vpravo</span>
           <input type="range" id="sl-photo-x" min="-100" max="100" step="1" value="0" style="flex:1;accent-color:var(--yellow);cursor:pointer">
-          <span class="ctrl-val" id="val-photo-x" style="font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right">0</span>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">Nahoru/Dolů</span>
+          <span class="ctrl-label" style="min-width:90px;">Nahoru/Dolů</span>
           <input type="range" id="sl-photo-y" min="-100" max="100" step="1" value="0" style="flex:1;accent-color:var(--yellow);cursor:pointer">
-          <span class="ctrl-val" id="val-photo-y" style="font-size:11px;font-weight:800;color:var(--navy);min-width:34px;text-align:right">0</span>
         </div>
       </div>
     </div>
@@ -678,8 +676,8 @@ document.getElementById('file-in').addEventListener('change', function(e) {
 document.getElementById('clear-photo-btn').addEventListener('click', function() {
   photoImg = null;
   photoOffsetX = 0; photoOffsetY = 0;
-  document.getElementById('sl-photo-x').value = 0; document.getElementById('val-photo-x').textContent = '0';
-  document.getElementById('sl-photo-y').value = 0; document.getElementById('val-photo-y').textContent = '0';
+  document.getElementById('sl-photo-x').value = 0;
+  document.getElementById('sl-photo-y').value = 0;
   document.getElementById('file-in').value = '';
   document.getElementById('upload-zone').style.display = 'flex';
   document.getElementById('thumb').style.display = 'none';
@@ -689,12 +687,10 @@ document.getElementById('clear-photo-btn').addEventListener('click', function() 
 
 document.getElementById('sl-photo-x').addEventListener('input', function() {
   photoOffsetX = +this.value / 100;
-  document.getElementById('val-photo-x').textContent = this.value;
   draw();
 });
 document.getElementById('sl-photo-y').addEventListener('input', function() {
   photoOffsetY = +this.value / 100;
-  document.getElementById('val-photo-y').textContent = this.value;
   draw();
 });
 
