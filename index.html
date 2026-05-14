@@ -255,8 +255,7 @@ img { max-width: 100%; display: block; }
 /* Photo mosaic */
 .photo-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  grid-template-rows: 220px 220px 220px 220px;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 .photo-item {
@@ -273,8 +272,6 @@ img { max-width: 100%; display: block; }
   background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
   font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85);
 }
-.photo-item.big { grid-column: span 2; grid-row: span 2; }
-.photo-item.wide { grid-column: span 2; }
 
 /* ─── MENU ─── */
 #menu { padding: 64px 24px; }
@@ -540,12 +537,7 @@ footer {
 /* ─── RESPONSIVE ─── */
 @media (max-width: 900px) {
   .features-grid { grid-template-columns: repeat(3, 1fr); }
-  .photo-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
-  }
-  .photo-item.big { grid-column: span 2; grid-row: span 1; height: 240px; }
-  .photo-item.wide { grid-column: span 2; }
+  .photo-grid { grid-template-columns: 1fr 1fr; }
   #trust .grid { grid-template-columns: repeat(2, 1fr); }
   .ref-grid { grid-template-columns: repeat(2, 1fr); }
   .testimonials { grid-template-columns: 1fr 1fr; }
@@ -557,6 +549,7 @@ footer {
 @media (max-width: 600px) {
   .hero-stats { grid-template-columns: repeat(2, 1fr); }
   .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .photo-grid { grid-template-columns: 1fr; }
   .ref-grid { grid-template-columns: 1fr; }
   .testimonials { grid-template-columns: 1fr; }
   .garance-card { padding: 28px 24px; }
@@ -565,22 +558,636 @@ footer {
 
 /* SVG icons inline */
 .icon { display: inline-block; vertical-align: middle; }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(43,95%,57%,0.4); }
+  50%       { box-shadow: 0 0 0 12px hsl(43,95%,57%,0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes lineGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.04; }
+  50%       { opacity: 0.09; }
+}
+@keyframes borderFlow {
+  0%, 100% { border-color: hsl(43,95%,57%,0.15); }
+  50%       { border-color: hsl(43,95%,57%,0.4); }
+}
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+@keyframes heroLineGrow {
+  from { height: 0; opacity: 0; }
+  to   { height: 120px; opacity: 0.5; }
+}
+@keyframes statsCount {
+  from { opacity: 0; transform: scale(0.8) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ─── SCROLL REVEAL ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(.22,1,.36,1), transform 0.65s cubic-bezier(.22,1,.36,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-left {
+  opacity: 0; transform: translateX(-30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+.reveal-right {
+  opacity: 0; transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+.reveal-scale {
+  opacity: 0; transform: scale(0.94);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+/* Stagger delays */
+.reveal:nth-child(2), .reveal-left:nth-child(2), .reveal-right:nth-child(2) { transition-delay: .08s; }
+.reveal:nth-child(3), .reveal-left:nth-child(3), .reveal-right:nth-child(3) { transition-delay: .16s; }
+.reveal:nth-child(4) { transition-delay: .24s; }
+.reveal:nth-child(5) { transition-delay: .32s; }
+.reveal:nth-child(6) { transition-delay: .40s; }
+
+/* ─── HERO ANIMATIONS ─── */
+.hero-ebf-badge {
+  animation: fadeInUp .7s cubic-bezier(.22,1,.36,1) .1s both;
+}
+.hero-sub-badge {
+  animation: fadeInUp .7s cubic-bezier(.22,1,.36,1) .25s both;
+}
+.hero-h1 {
+  animation: fadeInUp .8s cubic-bezier(.22,1,.36,1) .35s both;
+}
+.hero-desc {
+  animation: fadeInUp .7s cubic-bezier(.22,1,.36,1) .5s both;
+}
+.hero-meta {
+  animation: fadeInUp .7s cubic-bezier(.22,1,.36,1) .6s both;
+}
+.hero-stats {
+  animation: fadeInUp .7s cubic-bezier(.22,1,.36,1) .7s both;
+}
+.hero-stat .num {
+  display: block;
+  animation: statsCount .6s cubic-bezier(.22,1,.36,1) .9s both;
+}
+#hero .gradient-top {
+  animation: heroLineGrow .8s ease .2s both;
+}
+
+/* Glow pulse */
+#food-zone .glow {
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+/* ─── LIVE BADGE DOT ─── */
+.live-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--c-gold);
+  margin-right: 4px;
+  animation: dotBlink 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ─── HOVER TRANSITIONS — plynulé, jednotné ─── */
+/* Základní easing pro všechny hover efekty */
+:root { --ease-out: cubic-bezier(.22, 1, .36, 1); }
+
+.feature-card,
+.trust-card,
+.day-tab,
+.photo-item,
+.stage-item,
+.stage-col,
+.menu-item,
+.ref-card,
+.testimonial,
+.drink-item,
+.paella-type,
+.flying-item,
+.sushi-card,
+.flying-card,
+.card,
+.btn-gold,
+.btn-outline-gold,
+.btn-gold-full {
+  transition:
+    transform   0.4s var(--ease-out),
+    box-shadow  0.4s var(--ease-out),
+    border-color 0.35s ease,
+    background  0.35s ease,
+    opacity     0.35s ease;
+}
+
+.feature-card:hover        { transform: translateY(-5px); box-shadow: 0 14px 36px hsl(43,95%,57%,0.12); border-color: hsl(43,95%,57%,0.3); }
+.trust-card:hover          { transform: translateY(-4px); box-shadow: 0 10px 28px hsl(43,95%,57%,0.1); border-color: hsl(43,95%,57%,0.2); }
+.day-tab:hover:not(.active){ transform: translateY(-2px); border-color: hsl(43,95%,57%,0.3); color: rgba(255,255,255,0.85); }
+.day-tab.active            { transform: translateY(-1px); box-shadow: 0 6px 24px hsl(43,95%,57%,0.3); }
+.photo-item:hover          { transform: translateY(-5px); box-shadow: 0 18px 52px rgba(0,0,0,0.45); }
+.photo-item:hover .caption { opacity: 1; }
+.stage-item:hover          { transform: translateX(5px); background: rgba(255,255,255,0.07); border-color: hsl(43,95%,57%,0.25); }
+.stage-col:hover           { border-color: hsl(43,95%,57%,0.22); box-shadow: 0 6px 28px rgba(0,0,0,0.18); }
+.menu-item:hover           { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.28); border-color: hsl(43,95%,57%,0.2); }
+.ref-card:hover            { transform: translateY(-6px); box-shadow: 0 18px 44px rgba(0,0,0,0.32); border-color: hsl(43,95%,57%,0.3); }
+.testimonial:hover         { transform: translateY(-5px); box-shadow: 0 14px 40px rgba(0,0,0,0.22); border-color: hsl(43,95%,57%,0.2); }
+.drink-item:hover          { transform: translateX(4px); background: rgba(255,255,255,0.09); border-color: hsl(43,95%,57%,0.22); }
+.paella-type:hover         { transform: translateY(-5px); background: rgba(255,255,255,0.09); border-color: hsl(43,95%,57%,0.28); }
+.flying-item:hover         { transform: translateY(-3px); background: rgba(255,255,255,0.08); border-color: hsl(43,95%,57%,0.2); }
+.sushi-card:hover          { border-color: hsl(43,95%,57%,0.42); box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+.flying-card:hover         { border-color: hsl(43,95%,57%,0.22); }
+.btn-gold:hover            { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 6px 20px hsl(43,95%,57%,0.3); }
+.btn-outline-gold:hover    { transform: translateY(-2px); background: hsl(43,95%,57%,0.1); }
+.btn-gold-full:hover       { transform: translateY(-2px); box-shadow: 0 8px 28px hsl(43,95%,57%,0.35); }
+
+/* img zoom plynule */
+.photo-item img,
+.sushi-card-img img,
+.ref-img img,
+.flying-card-bg {
+  transition: transform 0.7s var(--ease-out), opacity 0.5s ease;
+}
+.photo-item:hover img         { transform: scale(1.06); }
+.sushi-card:hover .sushi-card-img img { transform: scale(1.07); }
+.ref-card:hover .ref-img img  { transform: scale(1.06); }
+.flying-card:hover .flying-card-bg { opacity: 0.2; }
+
+/* caption fade */
+.photo-item .caption { transition: opacity 0.4s ease; opacity: 0.85; }
+
+/* ─── SUSHI CARD ─── */
+.sushi-card {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0;
+  border-radius: 24px;
+  border: 1px solid hsl(43,95%,57%,0.2);
+  overflow: hidden;
+  background: linear-gradient(135deg, hsl(220,40%,9%), hsl(220,35%,12%));
+  margin-bottom: 20px;
+  transition: border-color .3s, box-shadow .3s;
+}
+.sushi-card:hover {
+  border-color: hsl(43,95%,57%,0.4);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+}
+.sushi-card-text { padding: 44px 48px; }
+.sushi-card-img {
+  position: relative;
+  overflow: hidden;
+}
+.sushi-card-img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .8s ease;
+}
+.sushi-card:hover .sushi-card-img img { transform: scale(1.06); }
+.sushi-dominanta {
+  position: absolute; bottom: 16px; right: 16px;
+  font-size: 11px; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--c-gold);
+  font-family: 'Barlow Condensed', sans-serif;
+  background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 99px;
+  backdrop-filter: blur(4px);
+  border: 1px solid hsl(43,95%,57%,0.3);
+}
+.sushi-features {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-bottom: 8px;
+}
+.sushi-feat {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: rgba(255,255,255,0.7);
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .sushi-card { grid-template-columns: 1fr; }
+  .sushi-card-img { height: 260px; }
+  .sushi-card-text { padding: 28px 24px; }
+}
+
+/* ─── FLYING CARD ─── */
+.flying-card {
+  position: relative; border-radius: 24px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  min-height: 500px;
+  margin-bottom: 20px;
+  transition: border-color .3s;
+}
+.flying-card:hover { border-color: hsl(43,95%,57%,0.2); }
+.flying-card-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0.12;
+  transition: opacity .5s;
+}
+.flying-card:hover .flying-card-bg { opacity: 0.2; }
+.flying-card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, hsl(220,40%,8%,0.97) 40%, hsl(220,35%,12%,0.8) 100%);
+}
+.flying-card-content {
+  position: relative; z-index: 2;
+  padding: 48px 52px;
+}
+.flying-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.flying-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 16px 18px;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.flying-item:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: hsl(43,95%,57%,0.2);
+  transform: translateY(-2px);
+}
+.flying-item h4 {
+  font-weight: 700; font-size: 14px; color: #fff;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.flying-item p { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+.flying-alergy {
+  display: block; margin-top: 6px;
+  font-size: 10px; color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+@media (max-width: 700px) {
+  .flying-grid { grid-template-columns: 1fr; }
+  .flying-card-content { padding: 28px 24px; }
+}
+
+/* ─── SECTION DIVIDERS WITH ANIMATION ─── */
+.section-divider-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(43,95%,57%,0.3), transparent);
+  margin: 0;
+  transform-origin: left;
+}
+.section-divider-line.visible {
+  animation: lineGrow .8s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ─── GOLD STAT SHIMMER ─── */
+.hero-stat .num, .trust-card .num, .paella-num {
+  position: relative;
+}
+
+/* ─── TRUST SECTION ─── */
+#trust { padding: 48px 24px; }
+#trust .grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+#trust .trust-card {
+  text-align: center; padding: 24px 16px; border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+#trust .trust-card svg { margin: 0 auto 12px; }
+#trust .trust-card .num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 30px; font-weight: 900; line-height: 1;
+}
+#trust .trust-card .label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.4); margin-top: 6px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+@media (max-width:900px) { #trust .grid { grid-template-columns: repeat(2,1fr); } }
+
+/* ─── GARANCE / CTA / FOOTER IMPROVEMENTS ─── */
+.garance-card {
+  animation: borderFlow 4s ease-in-out infinite;
+}
+.btn-gold-full {
+  position: relative; overflow: hidden;
+}
+.btn-gold-full::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.btn-gold:hover, .btn-outline-gold:hover {
+  transform: translateY(-1px);
+}
+
+/* ─── NAV / SCROLL PROGRESS BAR ─── */
+#scroll-bar {
+  position: fixed; top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--c-gold), var(--c-gold-light));
+  width: 0%;
+  z-index: 999;
+  transition: width .1s linear;
+}
+
+/* ─── MENU-SECTION-TITLE FIX ─── */
+.menu-section-title {
+  color: var(--c-gold);
+}
+
+/* ─── MENU-CTVRTEK SECTION ─── */
+#menu-ctvrtek { padding: 64px 24px; }
+
+/* ─── PER-DAY SECTION BG TINTS ─── */
+#menu {
+  background: linear-gradient(180deg, transparent 0%, hsl(220,60%,7%,0.5) 50%, transparent 100%);
+}
+#menu-streda {
+  background: linear-gradient(180deg, transparent 0%, hsl(220,38%,8%,0.8) 30%, hsl(43,50%,6%,0.4) 70%, transparent 100%);
+  border-top: 1px solid hsl(var(--gold)/0.1);
+  border-bottom: 1px solid hsl(var(--gold)/0.1);
+}
+#menu-ctvrtek {
+  background: linear-gradient(180deg, transparent 0%, hsl(280,30%,7%,0.5) 50%, transparent 100%);
+}
+
+/* ─── VEGE ITEM HIGHLIGHT ─── */
+.stage-item.vege {
+  border-left: 2px solid rgba(52,211,153,0.35);
+}
+.flying-item.vege {
+  border-left: 2px solid rgba(52,211,153,0.35);
+}
+
+/* ─── PRINT ROW ─── */
+.print-row { display: flex; justify-content: flex-end; margin: 16px 0; }
+
+/* ─── DRINKS REPEAT BANNER — stejný nápojový lístek všechny dny ─── */
+.drinks-repeat-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 28px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid hsl(var(--gold)/0.18);
+  margin-top: 48px;
+  text-decoration: none;
+  color: inherit;
+}
+.drinks-repeat-banner:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: hsl(var(--gold)/0.35);
+}
+.drinks-repeat-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.drinks-repeat-text { flex: 1; }
+.drinks-repeat-label {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--c-gold); font-weight: 700;
+  font-family: 'Barlow Condensed', sans-serif;
+  margin-bottom: 3px;
+}
+.drinks-repeat-title {
+  font-size: 17px; font-weight: 700; color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.drinks-repeat-sub {
+  font-size: 12px; color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+.drinks-repeat-arrow {
+  color: hsl(var(--gold)/0.5);
+  flex-shrink: 0;
+  transition: transform 0.4s var(--ease-out), color 0.35s ease;
+}
+.drinks-repeat-banner:hover .drinks-repeat-arrow {
+  transform: translateX(5px);
+  color: var(--c-gold);
+}
+
+
+/* ─── DAY HEADINGS — výrazné odlišení dnů ─── */
+.day-heading {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  border: 1px solid hsl(var(--gold)/0.3);
+}
+.day-heading-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 32px 20px;
+  background: linear-gradient(135deg, hsl(var(--gold)/0.14) 0%, hsl(var(--gold)/0.04) 60%, transparent 100%);
+  position: relative;
+  z-index: 1;
+}
+.day-heading-inner::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--c-gold-light), var(--c-gold));
+  border-radius: 0;
+}
+.day-heading-number {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 1;
+  color: hsl(var(--gold)/0.15);
+  letter-spacing: -0.04em;
+  user-select: none;
+  flex-shrink: 0;
+}
+.day-heading-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.day-heading-date {
+  font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--c-gold); font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
+}
+.day-heading-title {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 900; text-transform: uppercase;
+  letter-spacing: -0.02em; color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  line-height: 1;
+}
+.day-heading-strip {
+  height: 2px;
+  background: linear-gradient(90deg, var(--c-gold), hsl(var(--gold-light)/0.4), transparent);
+}
+/* Per-day accents — vše v gold paletě, různé intenzity a odlišení číslicí */
+/* Den 1 — zlatá (stejná jako zbytek stránky, méně intenzivní) */
+.day-heading.day-1 { border-color: hsl(var(--gold)/0.22); }
+.day-heading.day-1 .day-heading-inner { background: linear-gradient(135deg, hsl(var(--gold)/0.08) 0%, transparent 70%); }
+.day-heading.day-1 .day-heading-inner::before { background: linear-gradient(180deg, hsl(var(--gold-light)/0.7), hsl(var(--gold)/0.5)); }
+.day-heading.day-1 .day-heading-strip { background: linear-gradient(90deg, hsl(var(--gold)/0.4), transparent); }
+
+/* Den 2 — zlatá plná, nejvýraznější */
+.day-heading.day-2 { border-color: hsl(var(--gold)/0.45); }
+.day-heading.day-2 .day-heading-inner { background: linear-gradient(135deg, hsl(var(--gold)/0.16) 0%, transparent 70%); }
+.day-heading.day-2 .day-heading-inner::before { background: linear-gradient(180deg, var(--c-gold-light), var(--c-gold)); }
+.day-heading.day-2 .day-heading-strip { background: linear-gradient(90deg, var(--c-gold), hsl(var(--gold)/0.3), transparent); }
+
+/* Den 3 — teplá měděná, odlišná ale stále v paletě */
+.day-heading.day-3 { border-color: hsl(30,80%,55%,0.35); }
+.day-heading.day-3 .day-heading-inner { background: linear-gradient(135deg, hsl(30,80%,50%,0.1) 0%, transparent 70%); }
+.day-heading.day-3 .day-heading-inner::before { background: linear-gradient(180deg, hsl(38,95%,70%), hsl(30,80%,52%)); }
+.day-heading.day-3 .day-heading-strip { background: linear-gradient(90deg, hsl(30,80%,55%), transparent); }
+.day-heading.day-3 .day-heading-date { color: hsl(38,95%,72%); }
+.day-heading.day-3 .day-heading-number { color: hsl(30,80%,50%,0.18); }
+
+/* ─── STAGES ─── */
+#menu-streda { padding: 64px 24px; }
+.stages-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.stage-col {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px; overflow: hidden;
+}
+.stage-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-size: 15px; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #fff;
+}
+.stage-items { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.stage-item {
+  padding: 12px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: border-color .2s;
+}
+.stage-item:hover { border-color: hsl(var(--gold)/0.2); }
+.stage-item h4 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stage-item p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+.badge-tag {
+  display: inline-flex; font-size: 9px; padding: 1px 8px; border-radius: 99px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif;
+}
+
+/* ─── PAELLA CARD ─── */
+.paella-card {
+  position: relative; border-radius: 24px; overflow: hidden;
+  border: 1px solid hsl(var(--gold)/0.25);
+  min-height: 520px;
+}
+.paella-card-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0.2;
+}
+.paella-card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, hsl(220,40%,8%) 30%, hsl(220,35%,12%,0.6) 100%);
+}
+.paella-card-content { position: relative; z-index: 2; padding: 48px 52px; }
+.paella-stats {
+  display: flex; flex-wrap: wrap; gap: 32px; margin-bottom: 36px;
+}
+.paella-stat { display: flex; flex-direction: column; gap: 4px; }
+.paella-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px; font-weight: 900; color: var(--c-gold); line-height: 1;
+}
+.paella-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.4); font-family: 'Barlow Condensed', sans-serif;
+}
+.paella-types {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+.paella-type {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px;
+}
+.paella-type-icon { font-size: 24px; margin-bottom: 10px; }
+.paella-type h4 { font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 10px; }
+.paella-type p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .stages-grid { grid-template-columns: 1fr; }
+  .paella-types { grid-template-columns: 1fr; }
+  .paella-card-content { padding: 28px 24px; }
+}
+@media (max-width: 600px) {
+  .paella-stats { gap: 20px; }
+}
 </style>
 </head>
 <body>
+
+<!-- Scroll progress bar -->
+<div id="scroll-bar"></div>
 
 <!-- ═══ HERO ═══ -->
 <section id="hero">
   <div class="bg"></div>
   <div class="gradient-top"></div>
   <div class="content">
-
-    <!-- Logos row -->
-    <div class="hero-logos">
-      <div class="footer-logo"><span class="ring">◯</span> IMRVÉRE</div>
-      <span class="amp">&</span>
-      <div class="footer-logo" style="font-size:18px;letter-spacing:0.08em">VŠEPROAKCI</div>
-    </div>
 
     <!-- eBF badge -->
     <div class="hero-ebf-badge">
@@ -629,33 +1236,7 @@ footer {
   <div class="gradient-bottom"></div>
 </section>
 
-<!-- ═══ TRUST STRIP ═══ -->
-<section id="trust">
-  <div class="max-w-5">
-    <div class="grid">
-      <div class="trust-card">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2" style="margin:0 auto 12px"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
-        <div class="num gold">10+</div>
-        <div class="label">let zkušeností</div>
-      </div>
-      <div class="trust-card">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2" style="margin:0 auto 12px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <div class="num gold">50 000+</div>
-        <div class="label">obsloužených hostů</div>
-      </div>
-      <div class="trust-card">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2" style="margin:0 auto 12px"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/></svg>
-        <div class="num gold">200+</div>
-        <div class="label">úspěšných akcí</div>
-      </div>
-      <div class="trust-card">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" style="margin:0 auto 12px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-        <div class="num" style="color:#34d399">98%</div>
-        <div class="label">spokojenost klientů</div>
-      </div>
-    </div>
-  </div>
-</section>
+
 
 <!-- ═══ FOOD ZONE ═══ -->
 <section id="food-zone">
@@ -707,47 +1288,41 @@ footer {
 
     <!-- Photo mosaic -->
     <div class="photo-grid">
-      <div class="photo-item big" style="height:450px">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80" alt="OFYR Stage — live cooking na otevřeném ohni" loading="lazy">
         <div class="caption">OFYR Stage — live cooking na otevřeném ohni</div>
       </div>
-      <div class="photo-item">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80" alt="Sushi platter" loading="lazy">
       </div>
-      <div class="photo-item">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1514190051997-0f6f39ca5cde?w=600&q=80" alt="Bar truck" loading="lazy">
       </div>
-      <div class="photo-item wide" style="height:220px">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&q=80" alt="Love eBiz Burger — signature burger ve tvaru srdce" loading="lazy">
         <div class="caption">Love eBiz Burger — signature burger ve tvaru srdce</div>
       </div>
-      <div class="photo-item big" style="height:450px">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=800&q=80" alt="Live Paella — 3× obří pánve, pravý šafrán La Mancha" loading="lazy">
         <div class="caption">Live Paella — 3× obří pánve, pravý šafrán La Mancha</div>
       </div>
-      <div class="photo-item">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80" alt="Mexican food truck" loading="lazy">
       </div>
-      <div class="photo-item">
-        <img src="https://images.unsplash.com/photo-1551183053-bf91798d792b?w=600&q=80" alt="Live pasta" loading="lazy">
-      </div>
-      <div class="photo-item wide" style="height:220px">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&q=80" alt="Flying Buffet — roznášková služba přímo mezi hosty" loading="lazy">
         <div class="caption">Flying Buffet — roznášková služba přímo mezi hosty</div>
       </div>
-      <div class="photo-item">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80" alt="Poutine truck" loading="lazy">
       </div>
-      <div class="photo-item">
-        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80" alt="OFYR grilování" loading="lazy">
-      </div>
-      <div class="photo-item wide" style="height:220px">
+      <div class="photo-item" style="height:300px">
         <img src="https://images.unsplash.com/photo-1516997121675-4c2d1684aa3e?w=900&q=80" alt="Profesionální barový servis pro 1 000+ hostů" loading="lazy">
         <div class="caption">Profesionální barový servis pro 1 000+ hostů</div>
       </div>
     </div>
 
-    <p style="text-align:center;margin-top:40px;color:rgba(255,255,255,0.3);font-size:13px;font-style:italic">↓ Podrobné menu a kalkulace pro každý den najdete níže</p>
+
   </div>
 </section>
 
@@ -759,21 +1334,18 @@ footer {
       <p class="sub">Tři dny, tři kulinářské zážitky</p>
     </div>
 
-    <div class="day-tabs">
-      <div class="day-tab active">
-        <span class="day-name">Úterý · 19. 5. 2026</span>
-        <span class="day-title">Vernisáž</span>
+
+
+    <!-- Day heading: Tuesday -->
+    <div class="day-heading day-1">
+      <div class="day-heading-inner">
+        <div class="day-heading-number">1</div>
+        <div class="day-heading-text">
+          <span class="day-heading-date">Úterý · 19. 5. 2026</span>
+          <span class="day-heading-title">Vernisáž</span>
+        </div>
       </div>
-      <div class="day-tab">
-        <span class="day-name">Středa · 20. 5. 2026</span>
-        <span class="day-title">Konferenční den</span>
-        <span class="day-extra">+ Regata</span>
-      </div>
-      <div class="day-tab">
-        <span class="day-name">Čtvrtek · 21. 5. 2026</span>
-        <span class="day-title">Konferenční den</span>
-        <span class="day-extra">+ Galavečer</span>
-      </div>
+      <div class="day-heading-strip"></div>
     </div>
 
     <div class="menu-time">
@@ -783,7 +1355,6 @@ footer {
 
     <!-- Live cooking hero -->
     <div class="live-card">
-      <img class="live-card-img" src="https://images.unsplash.com/photo-1551183053-bf91798d792b?w=1200&q=70" alt="Pasta al Formaggio" loading="lazy">
       <div class="live-card-bg"></div>
       <div class="live-card-content">
         <div class="live-badge">
@@ -795,12 +1366,7 @@ footer {
       </div>
     </div>
 
-    <div class="print-row">
-      <button class="btn-gold">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
-        Tisk celé nabídky rautu
-      </button>
-    </div>
+
 
     <!-- Studený raut -->
     <div class="menu-section-title">
@@ -928,7 +1494,6 @@ footer {
     </div>
 
     <div class="drinks-bar-partner">
-      <div style="width:64px;height:48px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;letter-spacing:0.1em;flex-shrink:0">BRICK<br>HOUSE</div>
       <div>
         <div style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--c-gold);font-weight:700;margin-bottom:4px">Bar partner</div>
         <div style="font-size:20px;font-weight:700;font-family:'Barlow Condensed',sans-serif">Brickhouse Bar</div>
@@ -936,12 +1501,7 @@ footer {
       </div>
     </div>
 
-    <div class="print-row">
-      <button class="btn-gold">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
-        Tisk celého nápojového lístku
-      </button>
-    </div>
+
 
     <!-- Čepované nápoje -->
     <div class="drinks-section">
@@ -1062,214 +1622,572 @@ footer {
   </div>
 </section>
 
-<!-- ═══ OSOBNÍ GARANCE ═══ -->
-<section id="garance">
-  <div class="max-w-4">
-    <div class="garance-card">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:32px">
-        <div style="width:48px;height:48px;border-radius:12px;background:hsl(43,95%,57%,0.12);border:1px solid hsl(43,95%,57%,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
-        </div>
-        <div>
-          <h2 class="garance-title">Osobní garance</h2>
-          <p class="garance-subtitle">majitele společnosti</p>
-        </div>
-      </div>
-      <div class="garance-grid">
-        <div>
-          <p class="garance-text">Za každou akcí stojím osobně. Garantuji 100% přítomnost při přípravě, průběhu i demontáži celého festivalu. Kvalita, kterou slibujeme v nabídce, je kvalita, kterou dostanete na místě.</p>
-          <ul class="garance-list">
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-              Osobní přítomnost při stavbě, realizaci i demontáži
-            </li>
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-              Jeden kontakt po celou dobu spolupráce
-            </li>
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-              Garance dodržení dohodnuté kvality a rozsahu
-            </li>
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-              Okamžitá reakce na jakýkoliv požadavek během akce
-            </li>
-            <li>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-              Kompletní realizace pod značkou Imrvére
-            </li>
-          </ul>
-          <div class="garance-contacts">
-            <a href="tel:+420736777350">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              +420 736 777 350
-            </a>
-            <a href="mailto:jakub.vaclavinek@imrvere.com">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              jakub.vaclavinek@imrvere.com
-            </a>
-          </div>
-        </div>
-        <div class="garance-person">
-          <div class="garance-avatar">JV</div>
-          <div class="garance-name-card">
-            <div class="name">Jakub Václavínek</div>
-            <div class="role">zakladatel & jednatel</div>
-            <div class="company">FoodTruckCatering s.r.o.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ REFERENCE ═══ -->
-<section id="reference">
+<!-- ═══ STŘEDA – KONFERENČNÍ DEN + REGATA ═══ -->
+<section id="menu-streda">
   <div class="max-w-5">
-    <div style="text-align:center;margin-bottom:56px">
-      <span class="section-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
-        Track Record
-      </span>
-      <h2>Ověřeno <span class="gold-grad">praxí</span></h2>
-      <p style="color:rgba(255,255,255,0.5);max-width:560px;margin:16px auto 0;font-size:15px;line-height:1.7">Konference, festivaly, galavečery — víme, co obnáší obsloužit 1 000+ hostů denně.</p>
+
+    <!-- Day heading: Wednesday -->
+    <div class="day-heading day-2">
+      <div class="day-heading-inner">
+        <div class="day-heading-number">2</div>
+        <div class="day-heading-text">
+          <span class="day-heading-date">Středa · 20. 5. 2026</span>
+          <span class="day-heading-title">Konferenční den + Regata</span>
+        </div>
+      </div>
+      <div class="day-heading-strip"></div>
     </div>
 
-    <div class="ref-grid">
-      <div class="ref-card">
-        <div class="ref-img">
-          <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=70" alt="Pulse Konference 2025" loading="lazy">
-          <div class="ref-img-overlay"></div>
-          <span class="ref-tag">Konference · 1 000+ osob</span>
+    <!-- COFFEE BREAK -->
+    <div class="menu-time">
+      <div class="occasion">Coffee Break</div>
+      <div class="hours">☕ 8:30 – 17:00</div>
+    </div>
+
+    <div class="stages-grid">
+      <!-- Polévky -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Polévky</span>
         </div>
-        <div class="ref-body">
-          <h4>Pulse Konference 2025</h4>
-          <p>Komplexní cateringový servis: coffee breaky, rautový servis, nápojové stanice a obsluha během dvoudenní odborné konference v Gongu.</p>
-          <div class="ref-meta">
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span style="color:rgba(255,255,255,0.7);font-weight:600">1 000+ osob / den</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg><span style="color:rgba(255,255,255,0.4)">New Look Media s.r.o.</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="color:rgba(255,255,255,0.4)">05/2025</span></div>
-          </div>
-          <div class="ref-cta"><p>→ Přímá zkušenost s konferenčním formátem srovnatelným s eBF.</p></div>
-        </div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-img">
-          <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&q=70" alt="WTA 250 – Ostravar Open" loading="lazy">
-          <div class="ref-img-overlay"></div>
-          <span class="ref-tag">Mezinárodní sport · VIP</span>
-        </div>
-        <div class="ref-body">
-          <h4>WTA 250 – Ostravar Open</h4>
-          <p>Players Room a VIP Area během mezinárodního tenisového turnaje. Kompletní gastronomický servis pro VIP hosty a organizační tým.</p>
-          <div class="ref-meta">
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span style="color:rgba(255,255,255,0.7);font-weight:600">3 500 hostů / 7 dní</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg><span style="color:rgba(255,255,255,0.4)">PERINVEST s.r.o.</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="color:rgba(255,255,255,0.4)">2026</span></div>
-          </div>
-          <div class="ref-cta"><p>→ Kontinuální VIP servis na mezinárodní sportovní akci.</p></div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Pho Bo s kuřecím</h4><p>Vietnamská polévka s kuřecím masem, rýžovými nudlemi, bylinkami a chilli</p></div>
+          <div class="stage-item"><h4>Gulášová s hovězím</h4><p>Gulášová polévka na hovězím vývaru s hovězím masem a bramborami</p></div>
+          <div class="stage-item vege"><h4>Dýňový krém <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Dýňová krémová polévka s chilli, zázvorem a kokosovým mlékem</p></div>
         </div>
       </div>
-      <div class="ref-card">
-        <div class="ref-img">
-          <img src="https://images.unsplash.com/photo-1613387275674-cb92af1c29d1?w=600&q=70" alt="OKTAGON 61 – Brno" loading="lazy">
-          <div class="ref-img-overlay"></div>
-          <span class="ref-tag">Sport · Galavečer</span>
+      <!-- Empanadas -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Empanadas</span>
         </div>
-        <div class="ref-body">
-          <h4>OKTAGON 61 – Brno</h4>
-          <p>Kompletní gastronomický servis pro VIP i veřejné zóny během mezinárodního sportovního galavečera.</p>
-          <div class="ref-meta">
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span style="color:rgba(255,255,255,0.7);font-weight:600">600 hostů</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg><span style="color:rgba(255,255,255,0.4)">2NP production s.r.o.</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="color:rgba(255,255,255,0.4)">09/2024</span></div>
-          </div>
-          <div class="ref-cta"><p>→ VIP i mass-market segment v rámci jedné akce.</p></div>
-        </div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-img">
-          <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=70" alt="120 let Bochemie" loading="lazy">
-          <div class="ref-img-overlay"></div>
-          <span class="ref-tag">Firemní gala · ALL INCLUSIVE</span>
-        </div>
-        <div class="ref-body">
-          <h4>120 let Bochemie</h4>
-          <p>Reprezentativní firemní výroční akce vysoké úrovně včetně kompletního personálního a technického zajištění.</p>
-          <div class="ref-meta">
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span style="color:rgba(255,255,255,0.7);font-weight:600">400 hostů</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg><span style="color:rgba(255,255,255,0.4)">BOCHEMIE a.s.</span></div>
-            <div class="ref-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="color:rgba(255,255,255,0.4)">09/2024</span></div>
-          </div>
-          <div class="ref-cta"><p>→ Referenční zakázka pro nadnárodní korporát.</p></div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Empanada Angus</h4><p>Hovězí maso Angus s cibulí, olivami a argentinským kořením</p></div>
+          <div class="stage-item"><h4>Empanada Pollo</h4><p>Kuřecí maso vařené v mléce s bylinkami, cibulí a kapary</p></div>
+          <div class="stage-item vege"><h4>Empanada Queso <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Sýrová empanada s mozzarellou, ementálem, goudou a karamelizovanou cibulí</p></div>
         </div>
       </div>
     </div>
 
-    <!-- Testimonials -->
-    <div class="testimonials">
-      <div class="testimonial">
-        <svg class="quote-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
-        <p>„Spolupráce s Imrvére překonala naše očekávání. Kvalita jídla, rychlost servisu a profesionalita týmu byly na úrovni top evropských eventů."</p>
-        <div class="author">
-          <div class="author-name">Produkce Pulse Konference</div>
-          <div class="author-company">New Look Media</div>
+    <div class="stages-grid" style="margin-top:16px">
+      <!-- Mini Poke -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Mini Poke</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Mini Poke — hovězí</h4><p>Trhané hovězí maso s rýží, zeleninou, cherry rajčaty, smaženou cibulkou, koriandrem a sweet chilli majonézou</p></div>
+          <div class="stage-item"><h4>Mini Poke — kuře</h4><p>Trhané kuřecí maso s rýží, zeleninou, mangem, kešu, smaženou cibulkou, koriandrem a sweet chilli majonézou</p></div>
+          <div class="stage-item"><h4>Mini Poke — losos</h4><p>Marinovaný losos s rýží, čerstvou zeleninou, mangem, klíčky, koriandrem, sweet chilli majonézou, limetou a sezamem</p></div>
+          <div class="stage-item vege"><h4>Mini Poke — vegan <span class="badge-green" style="font-size:9px;padding:1px 8px">vegan</span></h4><p>Marinované tofu s rýží, zeleninou, edamame, kešu, granátovým jablkem, koriandrem, arašídovým dipem a dýňovými semínky</p></div>
         </div>
       </div>
-      <div class="testimonial">
-        <svg class="quote-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
-        <p>„OFYR stage byl absolutní highlight celé akce. Hosté se vraceli opakovaně a live cooking vytvořil nezapomenutelnou atmosféru."</p>
-        <div class="author">
-          <div class="author-name">Organizační tým</div>
-          <div class="author-company">OKTAGON MMA</div>
+      <!-- Sladké croissanty -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Sladké croissanty</span>
         </div>
-      </div>
-      <div class="testimonial">
-        <svg class="quote-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
-        <p>„Od prvního jednání po poslední porci — bezchybný servis. Přesně takového partnera jsme hledali pro naši akci."</p>
-        <div class="author">
-          <div class="author-name">Event Manager</div>
-          <div class="author-company">BOCHEMIE a.s.</div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Croissant — mandle</h4><p>Plněný mandlovým krémem</p></div>
+          <div class="stage-item"><h4>Croissant — pistácie</h4><p>Plněný pistáciovým krémem</p></div>
+          <div class="stage-item"><h4>Croissant — slaný karamel</h4><p>Plněný krémem se slaným karamelem</p></div>
+          <div class="stage-item"><h4>Croissant — malina</h4><p>Plněný malinovým krémem</p></div>
+          <div class="stage-item"><h4>Croissant — Lotus</h4><p>Plněný Lotus krémem</p></div>
+          <div class="stage-item"><h4>Croissant — mascarpone & ovoce</h4><p>Plněný mascarpone krémem s čerstvým ovocem</p></div>
         </div>
       </div>
     </div>
+
+    <div class="stages-grid" style="margin-top:16px">
+      <!-- Slané croissanty -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Slané croissanty</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Croissant — prosciutto & mozzarella</h4><p>Plněný prosciuttem, mozzarellou a pestem</p></div>
+          <div class="stage-item"><h4>Croissant — cheddar & slanina</h4><p>Plněný cheddarem a slaninou</p></div>
+        </div>
+      </div>
+      <!-- Sladké pečivo -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Sladké pečivo</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item vege"><h4>Vlčnovský koláček <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Koláček z kynutého těsta s náplní a drobenkou</p></div>
+          <div class="stage-item vege"><h4>Mini Mandlový řez <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Mandlová náplň frangipane, zdobeno mixem lesního ovoce</p></div>
+          <div class="stage-item vege"><h4>Mini Koblížky <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Máslové těsto s náplní z lesního ovoce nebo nugátu</p></div>
+          <div class="stage-item vege"><h4>Mini Pekanový pletenec <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Máslový pletenec s pekanovými ořechy a karamelem</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOD STAGES -->
+    <div style="display:flex;align-items:center;gap:16px;margin:48px 0 24px">
+      <div class="divider"></div>
+      <h3 style="font-size:14px;letter-spacing:0.2em;color:var(--c-gold);white-space:nowrap;font-family:'Barlow Condensed',sans-serif">🍽️ Food Stages · 11:00 – 22:00</h3>
+      <div class="divider"></div>
+    </div>
+
+    <div class="stages-grid">
+      <!-- Česká stage -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Česká stage</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Hovězí guláš</h4><p>Tradiční hovězí guláš s cibulkou, feferonkou a petrželkou, podávaný s kváskovým chlebem</p></div>
+          <div class="stage-item"><h4>Kuřecí roláda se špenátem</h4><p>Pečená kuřecí roláda plněná špenátem, podávaná s pečenými grenaille bramborami a tatarskou omáčkou</p></div>
+          <div class="stage-item vege"><h4>Smažený květák <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Smažený květák v křupavém trojobalu, podávaný s pečenými grenaille bramborami a tatarskou omáčkou</p></div>
+          <div class="stage-item"><h4>Okurkový salát <span class="badge-tag">Salát</span></h4><p>Čerstvé okurky se smetanou a koprem</p></div>
+          <div class="stage-item"><h4>Mini Jablečný Štrúdl <span class="badge-tag">Dezert</span></h4><p>Mini jablečný štrúdl z listového těsta</p></div>
+        </div>
+      </div>
+      <!-- Italská stage -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Italská stage</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Pinsa Prosciutto Crudo</h4><p>Římská pinsa s rajčatovým sugo, mozzarellou a rukolou, podávaná s prosciutto crudo</p></div>
+          <div class="stage-item"><h4>Pinsa Pepperoni</h4><p>Římská pinsa s rajčatovým sugo, mozzarellou a rukolou, podávaná se salami picante</p></div>
+          <div class="stage-item vege"><h4>Pinsa Margherita <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Římská pinsa s rajčatovým sugo, mozzarellou a bazalkou</p></div>
+          <div class="stage-item"><h4>Rajčatový salát <span class="badge-tag">Salát</span></h4><p>Zralá rajčata s červenou cibulkou, bazalkou a olivovým olejem</p></div>
+          <div class="stage-item"><h4>Cannoli s ricottou a pistácií <span class="badge-tag">Dezert</span></h4><p>Křupavé italské trubičky plněné sladkou ricottou a pistáciemi</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stages-grid" style="margin-top:16px">
+      <!-- Mexická stage -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Mexická stage</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Quesadillas Achiotte</h4><p>Zapečená tortilla se sýrem čedar a mozzarella, podávaná s trhanou BBQ vepřovou krkovicí, pico de gallo a kukuřicí</p></div>
+          <div class="stage-item"><h4>Tacos Combo</h4><p>Kombinace tří tacos v kukuřičné tortille, podávané s trhanou BBQ krkovicí, guacamole a salsou mexicana</p></div>
+          <div class="stage-item vege"><h4>Quesadillas Queso <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Zapečená tortilla se sýrem čedar, podávaná s pico de gallo a kukuřicí</p></div>
+          <div class="stage-item"><h4>Guacamole <span class="badge-tag">Salát</span></h4><p>Čerstvé avokádo s limetkou, rajčaty, cibulí a koriandrem</p></div>
+          <div class="stage-item"><h4>Mini Cheesecake <span class="badge-tag">Dezert</span></h4><p>Jemný cheesecake s drobenkovým korpusem a ovocem</p></div>
+        </div>
+      </div>
+      <!-- OFYR stage -->
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          <span>OFYR stage <small style="font-size:10px;opacity:.6;font-weight:400">11:00–14:00</small></span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Pečená brambora s trhaným hovězím</h4><p>Brambora pečená v alobalu s trhaným hovězím masem, podávaná se zakysanou smetanou</p></div>
+          <div class="stage-item"><h4>Duruchigi — korejský bůček</h4><p>Korejský bůček se zeleninou v pikantní gochujang marinádě, podávaný na domácím toustovém chlebu</p></div>
+          <div class="stage-item vege"><h4>Grilovaný hermelín se salátkem <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Hermelín grilovaný na OFYR grilu, podávaný s čerstvým salátkem</p></div>
+          <div class="stage-item"><h4>Salát Coleslaw <span class="badge-tag">Salát</span></h4><p>Klasický krémový coleslaw z čerstvého zelí a mrkve</p></div>
+          <div class="stage-item"><h4>Grilovaný ananas <span class="badge-tag">Dezert</span></h4><p>Grilovaný ananas servírovaný se zakysanou smetanou a čerstvou mátou</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Poutine stage -->
+    <div class="stages-grid" style="margin-top:16px">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+          <span>Poutine stage</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>BBQ Pulled Pork Poutine</h4><p>Velká porce hranolků s trhanou BBQ vepřovou krkovicí, podávané s coleslawem a nakládanou cibulkou</p></div>
+          <div class="stage-item"><h4>Chilli con Carne Poutine</h4><p>Velká porce hranolků s chilli con carne, podávané se zakysanou smetanou a jalapeños</p></div>
+          <div class="stage-item vege"><h4>Tex Mex Poutine <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Velká porce hranolků s vegetariánským chilli con carne, podávané s guacamole dipem a čedarem</p></div>
+          <div class="stage-item"><h4>Churros <span class="badge-tag">Dezert</span></h4><p>Křupavé churros se skořicovým cukrem a čokoládovou omáčkou</p></div>
+        </div>
+      </div>
+      <div class="stage-col" style="display:flex;align-items:center;justify-content:center;opacity:.3;font-size:13px;color:rgba(255,255,255,0.5)">
+        <!-- placeholder for symmetry -->
+      </div>
+    </div>
+
+    <!-- PAELLA VALENCIANA – večerní Regata -->
+    <div style="display:flex;align-items:center;gap:16px;margin:48px 0 24px">
+      <div class="divider"></div>
+      <h3 style="font-size:14px;letter-spacing:0.2em;color:var(--c-gold);white-space:nowrap;font-family:'Barlow Condensed',sans-serif">🔥 Live Cooking · Večerní Regata</h3>
+      <div class="divider"></div>
+    </div>
+
+    <div class="paella-card">
+      <div class="paella-card-bg" style="background-image:url('https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=1400&q=70')"></div>
+      <div class="paella-card-overlay"></div>
+      <div class="paella-card-content">
+        <div class="live-badge" style="margin-bottom:16px">
+          🔥 Live cooking · Večerní Regata · 600 porcí · 3 obří pánve
+        </div>
+        <h2 style="font-size:clamp(36px,6vw,72px);line-height:0.95;margin-bottom:20px">Paella Valenciana</h2>
+        <p style="color:rgba(255,255,255,0.7);max-width:680px;line-height:1.7;font-size:15px;margin-bottom:32px">Středobod večerní regaty — monumentální show cooking na otevřeném ohni. Tři obří pánve o průměru 120 cm, každá s jiným druhem paelly, připravované přímo před zraky hostů. Celkem 600 porcí autentické španělské paelly s šafránem dováženým přímo z La Mancha.</p>
+        <div class="paella-stats">
+          <div class="paella-stat"><span class="paella-num">600</span><span class="paella-label">Porcí celkem</span></div>
+          <div class="paella-stat"><span class="paella-num">3×</span><span class="paella-label">Obří pánve 120 cm</span></div>
+          <div class="paella-stat"><span class="paella-num">45 min</span><span class="paella-label">Na otevřeném ohni</span></div>
+          <div class="paella-stat"><span class="paella-num gold-grad" style="font-size:18px">La Mancha</span><span class="paella-label">Pravý šafrán</span></div>
+        </div>
+        <div class="paella-types">
+          <div class="paella-type">
+            <div class="paella-type-icon">🥘</div>
+            <h4>Paella Valenciana</h4>
+            <p>Klasická recepura z oblasti Valencie — kulatozrnná rýže bomba, kuřecí a králičí maso, zelené fazolky, rajčata, rozmarýn a pravý šafrán. Vařená 45 minut na otevřeném ohni s dokonalým socarrat na dně.</p>
+          </div>
+          <div class="paella-type">
+            <div class="paella-type-icon">🦐</div>
+            <h4>Paella Seafood</h4>
+            <p>Mořské plody z čerstvého úlovku — tygří krevety, slávky, kalamáry a mušle na šafránové rýži. Dochucená citronem, česnekem a čerstvou petrželkou. Servírovaná s aioli.</p>
+          </div>
+          <div class="paella-type">
+            <div class="paella-type-icon">🌿</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><h4 style="margin:0">Paella Veggie</h4><span class="badge-green" style="font-size:9px">vegetariánské</span></div>
+            <p>Vegetariánská verze pro každého — grilované artyčoky, pečená paprika, cuketa, cherry rajčata, cizrna a šafrán. Plná chutí Středomoří bez kompromisů.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
-<!-- ═══ CLOSING CTA ═══ -->
-<section id="cta">
-  <div class="max-w-3" style="text-align:center">
-    <h2>Těšíme se na <span class="gold-grad">spolupráci</span></h2>
-    <p>Věříme, že společně vytvoříme gastronomický zážitek, na který budou hosté eBiz Fora 2026 vzpomínat. Jsme připraveni — stačí říct.</p>
-    <div class="cta-buttons">
-      <a href="mailto:jakub.vaclavinek@imrvere.com" class="btn-gold-full">Napište nám</a>
-      <a href="tel:+420736777350" class="btn-outline-gold">+420 736 777 350</a>
+<!-- ═══ ČTVRTEK – KONFERENČNÍ DEN + GALAVEČER ═══ -->
+<section id="menu-ctvrtek">
+  <div class="max-w-5">
+
+    <div class="day-heading day-3">
+      <div class="day-heading-inner">
+        <div class="day-heading-number">3</div>
+        <div class="day-heading-text">
+          <span class="day-heading-date">Čtvrtek · 21. 5. 2026</span>
+          <span class="day-heading-title">Konferenční den + Galavečer</span>
+        </div>
+      </div>
+      <div class="day-heading-strip"></div>
     </div>
+
+    <!-- COFFEE BREAK -->
+    <div class="menu-time">
+      <div class="occasion">Coffee Break</div>
+      <div class="hours">☕ 8:30 – 17:00</div>
+    </div>
+
+    <div class="stages-grid">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Polévky</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Pho Bo s kuřecím</h4><p>Vietnamská polévka s kuřecím masem, rýžovými nudlemi, bylinkami a chilli</p></div>
+          <div class="stage-item"><h4>Gulášová s hovězím</h4><p>Gulášová polévka na hovězím vývaru s hovězím masem a bramborami</p></div>
+          <div class="stage-item vege"><h4>Dýňový krém <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Dýňová krémová polévka s chilli, zázvorem a kokosovým mlékem</p></div>
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Empanadas</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Empanada Angus</h4><p>Hovězí maso Angus s cibulí, olivami a argentinským kořením</p></div>
+          <div class="stage-item"><h4>Empanada Pollo</h4><p>Kuřecí maso vařené v mléce s bylinkami, cibulí a kapary</p></div>
+          <div class="stage-item vege"><h4>Empanada Queso <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Sýrová empanada s mozzarellou, ementálem, goudou a karamelizovanou cibulí</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stages-grid" style="margin-top:16px">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Mini Poke</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Mini Poke — hovězí</h4><p>Trhané hovězí maso s rýží, zeleninou, cherry rajčaty, smaženou cibulkou, koriandrem a sweet chilli majonézou</p></div>
+          <div class="stage-item"><h4>Mini Poke — kuře</h4><p>Trhané kuřecí maso s rýží, zeleninou, mangem, kešu, smaženou cibulkou, koriandrem a sweet chilli majonézou</p></div>
+          <div class="stage-item"><h4>Mini Poke — losos</h4><p>Marinovaný losos s rýží, čerstvou zeleninou, mangem, klíčky, koriandrem, sweet chilli majonézou, limetou a sezamem</p></div>
+          <div class="stage-item vege"><h4>Mini Poke — vegan <span class="badge-green" style="font-size:9px;padding:1px 8px">vegan</span></h4><p>Marinované tofu s rýží, zeleninou, edamame, kešu, granátovým jablkem, koriandrem, arašídovým dipem a dýňovými semínky</p></div>
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Sladké croissanty</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Croissant — mandle</h4><p>Plněný mandlovým krémem</p></div>
+          <div class="stage-item"><h4>Croissant — pistácie</h4><p>Plněný pistáciovým krémem</p></div>
+          <div class="stage-item"><h4>Croissant — slaný karamel</h4><p>Plněný krémem se slaným karamelem</p></div>
+          <div class="stage-item"><h4>Croissant — malina</h4><p>Plněný malinovým krémem</p></div>
+          <div class="stage-item"><h4>Croissant — Lotus</h4><p>Plněný Lotus krémem</p></div>
+          <div class="stage-item"><h4>Croissant — mascarpone & ovoce</h4><p>Plněný mascarpone krémem s čerstvým ovocem</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stages-grid" style="margin-top:16px">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Slané croissanty</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Croissant — prosciutto & mozzarella</h4><p>Plněný prosciuttem, mozzarellou a pestem</p></div>
+          <div class="stage-item"><h4>Croissant — cheddar & slanina</h4><p>Plněný cheddarem a slaninou</p></div>
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Sladké pečivo</span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item vege"><h4>Vlčnovský koláček <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Koláček z kynutého těsta s náplní a drobenkou</p></div>
+          <div class="stage-item vege"><h4>Mini Mandlový řez <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Mandlová náplň frangipane, zdobeno mixem lesního ovoce</p></div>
+          <div class="stage-item vege"><h4>Mini Koblížky <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Máslové těsto s náplní z lesního ovoce nebo nugátu</p></div>
+          <div class="stage-item vege"><h4>Mini Pekanový pletenec <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Máslový pletenec s pekanovými ořechy a karamelem</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOD STAGES -->
+    <div style="display:flex;align-items:center;gap:16px;margin:48px 0 24px">
+      <div class="divider"></div>
+      <h3 style="font-size:14px;letter-spacing:0.2em;color:var(--c-gold);white-space:nowrap;font-family:'Barlow Condensed',sans-serif">🍽️ Food Stages · 11:00 – 14:00</h3>
+      <div class="divider"></div>
+    </div>
+
+    <div class="stages-grid">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Česká stage <small style="font-size:10px;opacity:.6;font-weight:400">11:00–14:00</small></span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Hovězí guláš</h4><p>Tradiční hovězí guláš s cibulkou, feferonkou a petrželkou, podávaný s kváskovým chlebem</p></div>
+          <div class="stage-item"><h4>Kuřecí roláda se špenátem</h4><p>Pečená kuřecí roláda plněná špenátem, podávaná s pečenými grenaille bramborami a tatarskou omáčkou</p></div>
+          <div class="stage-item vege"><h4>Smažený květák <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Smažený květák v křupavém trojobalu, podávaný s pečenými grenaille bramborami a tatarskou omáčkou</p></div>
+          <div class="stage-item"><h4>Okurkový salát <span class="badge-tag">Salát</span></h4><p>Čerstvé okurky se smetanou a koprem</p></div>
+          <div class="stage-item"><h4>Mini Jablečný Štrúdl <span class="badge-tag">Dezert</span></h4><p>Mini jablečný štrúdl z listového těsta</p></div>
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Italská stage <small style="font-size:10px;opacity:.6;font-weight:400">11:00–14:00</small></span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Pinsa Prosciutto Crudo</h4><p>Římská pinsa s rajčatovým sugo, mozzarellou a rukolou, podávaná s prosciutto crudo</p></div>
+          <div class="stage-item"><h4>Pinsa Pepperoni</h4><p>Římská pinsa s rajčatovým sugo, mozzarellou a rukolou, podávaná se salami picante</p></div>
+          <div class="stage-item vege"><h4>Pinsa Margherita <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Římská pinsa s rajčatovým sugo, mozzarellou a bazalkou</p></div>
+          <div class="stage-item"><h4>Rajčatový salát <span class="badge-tag">Salát</span></h4><p>Zralá rajčata s červenou cibulkou, bazalkou a olivovým olejem</p></div>
+          <div class="stage-item"><h4>Cannoli s ricottou a pistácií <span class="badge-tag">Dezert</span></h4><p>Křupavé italské trubičky plněné sladkou ricottou a pistáciemi</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stages-grid" style="margin-top:16px">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          <span>Mexická stage <small style="font-size:10px;opacity:.6;font-weight:400">11:00–14:00</small></span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Quesadillas Achiotte</h4><p>Zapečená tortilla se sýrem čedar a mozzarella, podávaná s trhanou BBQ vepřovou krkovicí, pico de gallo a kukuřicí</p></div>
+          <div class="stage-item"><h4>Tacos Combo</h4><p>Kombinace tří tacos v kukuřičné tortille, podávané s trhanou BBQ krkovicí, guacamole a salsou mexicana</p></div>
+          <div class="stage-item vege"><h4>Quesadillas Queso <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Zapečená tortilla se sýrem čedar, podávaná s pico de gallo a kukuřicí</p></div>
+          <div class="stage-item"><h4>Guacamole <span class="badge-tag">Salát</span></h4><p>Čerstvé avokádo s limetkou, rajčaty, cibulí a koriandrem</p></div>
+          <div class="stage-item"><h4>Mini Cheesecake <span class="badge-tag">Dezert</span></h4><p>Jemný cheesecake s drobenkovým korpusem a ovocem</p></div>
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          <span>OFYR stage <small style="font-size:10px;opacity:.6;font-weight:400">11:00–22:00</small></span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>Pečená brambora s trhaným hovězím</h4><p>Brambora pečená v alobalu s trhaným hovězím masem, podávaná se zakysanou smetanou</p></div>
+          <div class="stage-item"><h4>Duruchigi — korejský bůček</h4><p>Korejský bůček se zeleninou v pikantní gochujang marinádě, podávaný na domácím toustovém chlebu</p></div>
+          <div class="stage-item vege"><h4>Grilovaný hermelín se salátkem <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Hermelín grilovaný na OFYR grilu, podávaný s čerstvým salátkem</p></div>
+          <div class="stage-item"><h4>Salát Coleslaw <span class="badge-tag">Salát</span></h4><p>Klasický krémový coleslaw z čerstvého zelí a mrkve</p></div>
+          <div class="stage-item"><h4>Grilovaný ananas <span class="badge-tag">Dezert</span></h4><p>Grilovaný ananas servírovaný se zakysanou smetanou a čerstvou mátou</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stages-grid" style="margin-top:16px">
+      <div class="stage-col">
+        <div class="stage-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(43,95%,57%)" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+          <span>Poutine stage <small style="font-size:10px;opacity:.6;font-weight:400">11:00–22:00</small></span>
+        </div>
+        <div class="stage-items">
+          <div class="stage-item"><h4>BBQ Pulled Pork Poutine</h4><p>Velká porce hranolků s trhanou BBQ vepřovou krkovicí, podávané s coleslawem a nakládanou cibulkou</p></div>
+          <div class="stage-item"><h4>Chilli con Carne Poutine</h4><p>Velká porce hranolků s chilli con carne, podávané se zakysanou smetanou a jalapeños</p></div>
+          <div class="stage-item vege"><h4>Tex Mex Poutine <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Velká porce hranolků s vegetariánským chilli con carne, podávané s guacamole dipem a čedarem</p></div>
+          <div class="stage-item"><h4>Churros <span class="badge-tag">Dezert</span></h4><p>Křupavé churros se skořicovým cukrem a čokoládovou omáčkou</p></div>
+        </div>
+      </div>
+      <div class="stage-col" style="visibility:hidden"></div>
+    </div>
+
+    <!-- GALAVEČER -->
+    <div style="display:flex;align-items:center;gap:16px;margin:48px 0 24px">
+      <div class="divider"></div>
+      <h3 style="font-size:14px;letter-spacing:0.2em;color:var(--c-gold);white-space:nowrap;font-family:'Barlow Condensed',sans-serif">✨ Galavečer · FSA Awards</h3>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Colour Sushi -->
+    <div class="sushi-card">
+      <div class="sushi-card-text">
+        <div class="live-badge" style="margin-bottom:16px">
+          🍣 Live cooking · Sushi Master
+        </div>
+        <h2 style="font-size:clamp(42px,7vw,80px);line-height:0.92;margin-bottom:20px;font-family:'Barlow Condensed',sans-serif;font-weight:900;text-transform:uppercase">Colour<br>Sushi</h2>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:rgba(255,255,255,0.7)">LN</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:#fff">Lukáš Neckář</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px">Sushi Master</div>
+          </div>
+        </div>
+        <p style="color:rgba(255,255,255,0.65);line-height:1.7;font-size:15px;margin-bottom:28px;max-width:500px">Sushi připravované přímo před hosty zkušeným sushi masterem Lukášem Neckářem. Hosté sledují celý proces vzniku jednotlivých rolí od krájení čerstvých surovin až po finální aranžmá. Dominanta galavečera.</p>
+        <div class="sushi-features">
+          <div class="sushi-feat">🍱<span>Maki &amp; Uramaki</span></div>
+          <div class="sushi-feat">🔪<span>Nigiri</span></div>
+          <div class="sushi-feat">🌈<span>Rainbow Rolls</span></div>
+          <div class="sushi-feat">🔥<span>Live Cooking</span></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:20px">
+          <span class="badge">Live Sushi Bar</span>
+          <span class="badge">Čerstvé suroviny</span>
+          <span class="badge">Rainbow Rolls</span>
+          <span class="badge">Nigiri &amp; Maki</span>
+        </div>
+      </div>
+      <div class="sushi-card-img">
+        <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80" alt="Colour Sushi" loading="lazy">
+        <div class="sushi-dominanta">✦ Dominanta večera</div>
+      </div>
+    </div>
+
+    <!-- Flying Buffet -->
+    <div class="flying-card">
+      <div class="flying-card-bg" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=70')"></div>
+      <div class="flying-card-overlay"></div>
+      <div class="flying-card-content">
+        <div class="live-badge" style="margin-bottom:20px">Flying Buffet · FSA Awards</div>
+        <h2 style="font-size:clamp(36px,6vw,64px);line-height:0.92;margin-bottom:20px;font-family:'Barlow Condensed',sans-serif;font-weight:900;text-transform:uppercase">Flying Buffet</h2>
+        <p style="color:rgba(255,255,255,0.65);max-width:700px;line-height:1.7;font-size:15px;margin-bottom:36px">Galavečer probíhá formou flying buffetu — servírované mini porce roznášené zkušenými číšníky přímo mezi hosty. Elegantní formát ideální pro networking a slavnostní atmosféru předávání FSA Awards.</p>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c-gold)" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--c-gold);font-family:'Barlow Condensed',sans-serif">Menu</span>
+        </div>
+        <div class="flying-grid">
+          <div class="flying-item"><h4>Chimichanga — Kuře Cézar</h4><p>Cézar zálivka s ančovičkou, parmezán, římský salát, slanina, chlebový krutón</p><span class="flying-alergy">Alergeny: 1, 3, 4, 7</span></div>
+          <div class="flying-item"><h4>Chimichanga — Bůček Hoisin</h4><p>Bůček, hoisin majonéza, pórkový salát se sezamem, brie sýr, rukola</p><span class="flying-alergy">Alergeny: 1, 3, 6, 7, 11</span></div>
+          <div class="flying-item"><h4>Kachní paštika & ostružinovo-fíkové čatní</h4><p>Drcené mandle</p><span class="flying-alergy">Alergeny: 8</span></div>
+          <div class="flying-item vege"><h4>Zauzený sýr Brie <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>& tapenáda ze sušených rajčat s bazalkou, drcené mandle</p><span class="flying-alergy">Alergeny: 7, 8</span></div>
+          <div class="flying-item vege"><h4>Špíz Caprese <span class="badge-green" style="font-size:9px;padding:1px 8px">vegetariánské</span></h4><p>Rajče, mozzarella, bylinkové pesto</p><span class="flying-alergy">Alergeny: 7, 8</span></div>
+          <div class="flying-item"><h4>Makronka <span class="badge-tag">Dezert</span></h4><p>Francouzská makronka s krémovou náplní</p><span class="flying-alergy">Alergeny: 1, 3, 7, 8</span></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
-
-<!-- ═══ FOOTER ═══ -->
-<footer>
-  <div class="footer-logos">
-    <div class="footer-logo"><span class="ring">◯</span> IMRVÉRE</div>
-    <span style="color:rgba(255,255,255,0.3)">&</span>
-    <div class="footer-logo" style="font-size:14px">VŠEPROAKCI</div>
-  </div>
-  <div class="footer-right">
-    <p>Jakub Václavínek · jakub.vaclavinek@imrvere.com · +420 736 777 350</p>
-    <p>FoodTruckCatering s.r.o. · IČO: 10835857 · DIČ: CZ10835857 · Hradní 27/37, 710 00 Ostrava – Slezská Ostrava</p>
-    <p style="color:rgba(255,255,255,0.2)">© 2026 FoodTruckCatering s.r.o. · Nabídka gastronomického zajištění eBF 2026</p>
-  </div>
-</footer>
 
 <script>
-// Day tab switching
+// ── Scroll progress bar ──
+const bar = document.getElementById('scroll-bar');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  if (bar) bar.style.width = pct + '%';
+}, { passive: true });
+
+// ── Day tab switching ──
 document.querySelectorAll('.day-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
   });
+});
+
+// ── Scroll reveal ──
+const revealSelectors = [
+  '.feature-card', '.photo-item', '.trust-card', '.ref-card',
+  '.testimonial', '.stage-col', '.menu-item', '.drink-item',
+  '.day-heading', '.live-card', '.paella-type', '.flying-item',
+  '.sushi-card', '.flying-card', '.paella-card', '.garance-card',
+  '.drinks-bar-partner', '.drinks-section', '.section-label',
+  '.day-tab', '.hero-stat'
+];
+const revealEls = document.querySelectorAll(revealSelectors.join(', '));
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0) scale(1) translateX(0)';
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+
+revealEls.forEach((el, i) => {
+  // skip elements already in viewport on load
+  const rect = el.getBoundingClientRect();
+  if (rect.top >= window.innerHeight * 0.98) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = `opacity 0.6s cubic-bezier(.22,1,.36,1) ${(i % 5) * 0.06}s, transform 0.6s cubic-bezier(.22,1,.36,1) ${(i % 5) * 0.06}s`;
+    io.observe(el);
+  }
+});
+
+// ── Stagger feature cards ──
+document.querySelectorAll('.features-grid .feature-card').forEach((card, i) => {
+  card.style.transitionDelay = (i * 0.07) + 's';
+});
+
+// ── Stagger ref cards ──
+document.querySelectorAll('.ref-grid .ref-card').forEach((card, i) => {
+  card.style.transitionDelay = (i * 0.08) + 's';
+});
+
+// ── Stagger stage items inside each stage-col ──
+document.querySelectorAll('.stage-col').forEach(col => {
+  col.querySelectorAll('.stage-item').forEach((item, i) => {
+    item.style.transitionDelay = (i * 0.04) + 's';
+  });
+});
+
+// ── Photo grid stagger ──
+document.querySelectorAll('.photo-grid .photo-item').forEach((item, i) => {
+  item.style.transitionDelay = (i * 0.06) + 's';
+});
+
+// ── Testimonials stagger ──
+document.querySelectorAll('.testimonials .testimonial').forEach((item, i) => {
+  item.style.transitionDelay = (i * 0.1) + 's';
+});
+
+// ── Flying items stagger ──
+document.querySelectorAll('.flying-grid .flying-item').forEach((item, i) => {
+  item.style.transitionDelay = (i * 0.07) + 's';
 });
 </script>
 </body>
